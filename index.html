@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prathvi Narayan — Creative Developer &amp; 3D Web</title>
+  <meta name="description" content="Portfolio of Prathvi Narayan — a creative developer building scroll-driven, 3D worlds for the web." />
+  <meta name="theme-color" content="#F2EFE9" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F2EFE9'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%2317140F' stroke-width='3.5'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23E4572E'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- preloader -->
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <div class="loader-logo">PN<b>®</b></div>
+      <div class="loader-line"></div>
+      <div class="loader-count" id="loaderCount">000</div>
+    </div>
+  </div>
+
+  <!-- 3d stage -->
+  <div class="bg-glow" aria-hidden="true"></div>
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="frame" aria-hidden="true"></div>
+  <div class="progress" id="progress"></div>
+
+  <!-- header -->
+  <header class="site-head">
+    <a class="logo" href="#" data-go="0">Prathvi&nbsp;N<span class="logo-dot">.</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="#" data-go="1">About</a>
+      <a href="#" data-go="2">Work</a>
+      <a href="#" data-go="6">Craft</a>
+      <a href="#" data-go="7">Contact</a>
+    </nav>
+  </header>
+
+  <!-- scroll length -->
+  <div id="scrollspace" aria-hidden="true"></div>
+
+  <!-- fixed ui -->
+  <div class="ui">
+    <!-- 0 · hero -->
+    <section class="panel panel-hero" data-idx="0" aria-label="Intro">
+      <div class="panel-in">
+        <p class="hero-kicker kicker rv" style="--sp:-14px">Creative developer · Portfolio <span class="acc">2026</span></p>
+        <h1 class="hero-title">
+          <span class="line"><span class="line-in">Prathvi</span></span>
+          <span class="line"><span class="line-in">Narayan<em class="serif acc">.</em></span></span>
+        </h1>
+        <p class="hero-sub">I design and build <em class="serif">scroll-driven 3D worlds</em> for the web — where art direction, motion and engineering pull in the same direction.</p>
+        <div class="hero-meta">
+          <span class="avail"><i></i>Available for Q4 2026</span>
+          <span>Freelance · Worldwide</span>
+        </div>
+        <div class="scroll-hint" id="scrollHint"><span></span>Scroll to explore</div>
+      </div>
+    </section>
+
+    <!-- 1 · about -->
+    <section class="panel panel-about" data-idx="1" aria-label="About">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="about-wrap">
+          <p class="kicker rv" style="--sp:-12px">01 · About</p>
+          <h2 class="h2 rv" style="--sp:-26px">Design-minded,<br /><em class="serif">code-obsessed.</em></h2>
+          <p class="lede rv" style="--sp:-20px">I&rsquo;m Prathvi — a creative developer who treats the browser like a stage. For six years I&rsquo;ve been building digital experiences where design, motion and code move as one.</p>
+          <p class="soft rv" style="--sp:-14px">My work lives at the intersection of art direction and performance: WebGL scenes that feel alive, shaders that carry the story, and interfaces that hold 60 frames per second on the phone in your pocket.</p>
+          <ul class="stats rv" style="--sp:-10px">
+            <li><b>06+</b><span>Years crafting</span></li>
+            <li><b>40+</b><span>Projects shipped</span></li>
+            <li><b>08</b><span>Awards &amp; mentions</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · work / aurora -->
+    <section class="panel panel-work" data-idx="2" aria-label="Project Aurora">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="work-inner">
+          <p class="kicker rv" style="--sp:-12px">Selected work · 01 / 04</p>
+          <div class="work-head rv" style="--sp:-26px">
+            <span class="work-idx">01</span>
+            <h3 class="work-title">Aurora</h3>
+          </div>
+          <p class="work-desc rv" style="--sp:-18px">An immersive brand world for a Scandinavian lighting studio — a WebGL product configurator with real-time PBR materials, soft studio light and a buttery 60&nbsp;fps.</p>
+          <ul class="tags rv" style="--sp:-12px"><li>Three.js</li><li>GLSL</li><li>React</li></ul>
+          <div class="work-meta rv" style="--sp:-8px">
+            <span>2025 — Interactive site</span>
+            <a class="work-link" href="#" data-cursor>View case <i>&rarr;</i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · work / meridian -->
+    <section class="panel panel-work" data-idx="3" aria-label="Project Meridian">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="work-inner">
+          <p class="kicker rv" style="--sp:-12px">Selected work · 02 / 04</p>
+          <div class="work-head rv" style="--sp:-26px">
+            <span class="work-idx">02</span>
+            <h3 class="work-title">Meridian</h3>
+          </div>
+          <p class="work-desc rv" style="--sp:-18px">Real-time 3D data visualisation for orbital telemetry — forty thousand satellites rendered as a living map you can fly through at full frame rate.</p>
+          <ul class="tags rv" style="--sp:-12px"><li>WebGL</li><li>WebGPU</li><li>D3</li></ul>
+          <div class="work-meta rv" style="--sp:-8px">
+            <span>2025 — Data platform</span>
+            <a class="work-link" href="#" data-cursor>View case <i>&rarr;</i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · work / fold -->
+    <section class="panel panel-work" data-idx="4" aria-label="Project Fold">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="work-inner">
+          <p class="kicker rv" style="--sp:-12px">Selected work · 03 / 04</p>
+          <div class="work-head rv" style="--sp:-26px">
+            <span class="work-idx">03</span>
+            <h3 class="work-title">Fold</h3>
+          </div>
+          <p class="work-desc rv" style="--sp:-18px">A scroll &amp; audio driven interactive story for a fashion house. Twelve chapters, three looks per act, zero loading screens — the whole piece streams under 1&nbsp;MB.</p>
+          <ul class="tags rv" style="--sp:-12px"><li>Three.js</li><li>WebAudio</li><li>GSAP</li></ul>
+          <div class="work-meta rv" style="--sp:-8px">
+            <span>2024 — Interactive story</span>
+            <a class="work-link" href="#" data-cursor>View case <i>&rarr;</i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · work / halcyon -->
+    <section class="panel panel-work" data-idx="5" aria-label="Project Halcyon">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="work-inner">
+          <p class="kicker rv" style="--sp:-12px">Selected work · 04 / 04</p>
+          <div class="work-head rv" style="--sp:-26px">
+            <span class="work-idx">04</span>
+            <h3 class="work-title">Halcyon</h3>
+          </div>
+          <p class="work-desc rv" style="--sp:-18px">A generative art installation and its web companion — a slow, breathing machine of light that has now welcomed over 120,000 visitors. One very happy gallery.</p>
+          <ul class="tags rv" style="--sp:-12px"><li>GLSL</li><li>Svelte</li><li>Generative</li></ul>
+          <div class="work-meta rv" style="--sp:-8px">
+            <span>2024 — Generative art</span>
+            <a class="work-link" href="#" data-cursor>View case <i>&rarr;</i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · craft -->
+    <section class="panel panel-craft" data-idx="6" aria-label="Craft">
+      <div class="panel-in">
+        <div class="scrim"></div>
+        <div class="craft-wrap">
+          <p class="kicker rv" style="--sp:-12px">06 · Craft</p>
+          <h2 class="h2 rv" style="--sp:-26px">What I do<br /><em class="serif">best.</em></h2>
+          <ul class="craft-list rv" style="--sp:-18px">
+            <li><span>Creative development</span><i>01</i></li>
+            <li><span>WebGL &amp; Three.js</span><i>02</i></li>
+            <li><span>Shader design — GLSL</span><i>03</i></li>
+            <li><span>3D &amp; motion</span><i>04</i></li>
+            <li><span>Front-end architecture</span><i>05</i></li>
+          </ul>
+        </div>
+        <div class="stack rv" style="--sp:-12px">
+          <p class="stack-label">Toolkit</p>
+          <ul class="chips">
+            <li>TypeScript</li><li>React</li><li>Svelte</li><li>Three.js</li><li>WebGPU</li>
+            <li>GSAP</li><li>Blender</li><li>Houdini</li><li>Node</li><li>Vite</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 · contact -->
+    <section class="panel panel-contact" data-idx="7" aria-label="Contact">
+      <div class="panel-in">
+        <p class="kicker center rv" style="--sp:-12px">07 · Contact</p>
+        <h2 class="contact-h rv" style="--sp:-26px">Let&rsquo;s make<br />something <em class="serif">unreal.</em></h2>
+        <a class="email rv" style="--sp:-18px" href="mailto:hello@prathvi.dev" data-cursor>hello@prathvi.dev</a>
+        <div class="socials rv" style="--sp:-12px">
+          <a href="https://github.com/prathvinarayan78" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://x.com" target="_blank" rel="noreferrer">X / Twitter</a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a href="https://www.instagram.com" target="_blank" rel="noreferrer">Instagram</a>
+        </div>
+        <footer class="foot">
+          <span>&copy; 2026 Prathvi Narayan</span>
+          <span class="foot-mid">Designed &amp; built in the browser</span>
+          <span id="clock">--:-- IST</span>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <!-- section dots -->
+  <aside class="dots" aria-label="Sections">
+    <button class="dot on" data-label="Home" aria-label="Go to intro"></button>
+    <button class="dot" data-label="About" aria-label="Go to about"></button>
+    <button class="dot" data-label="Aurora" aria-label="Go to project Aurora"></button>
+    <button class="dot" data-label="Meridian" aria-label="Go to project Meridian"></button>
+    <button class="dot" data-label="Fold" aria-label="Go to project Fold"></button>
+    <button class="dot" data-label="Halcyon" aria-label="Go to project Halcyon"></button>
+    <button class="dot" data-label="Craft" aria-label="Go to craft"></button>
+    <button class="dot" data-label="Contact" aria-label="Go to contact"></button>
+  </aside>
+
+  <!-- custom cursor -->
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"><span class="cursor-label" id="cursorLabel"></span></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
