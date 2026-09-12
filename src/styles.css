@@ -515,6 +515,13 @@ body.ready .scroll-hint { opacity: 1; }
   color: var(--muted);
   background: rgba(242, 239, 233, 0.2);
 }
+.foot-mid a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(23, 20, 15, 0.3);
+  transition: color 0.3s, text-decoration-color 0.3s;
+}
+.foot-mid a:hover { color: var(--ink); text-decoration-color: var(--ink); }
 
 /* ---------- dots ---------- */
 
@@ -670,7 +677,8 @@ body.is-scene .cursor-label { opacity: 1; color: #f5f1e8; }
   .panel-work .scrim,
   .panel-about .scrim,
   .panel-craft .scrim { opacity: 1; }
-  .foot-mid { display: none; }
+  .foot { flex-wrap: wrap; gap: 8px 14px; justify-content: center; text-align: center; }
+  .foot-mid { order: 3; width: 100%; font-size: 10px; }
   .dots { right: 8px; gap: 10px; }
   .dot::after { display: none; }
   .stats { gap: 22px; flex-wrap: wrap; }

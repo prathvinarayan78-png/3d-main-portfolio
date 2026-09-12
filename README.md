@@ -28,14 +28,17 @@ node smoke-test.mjs # headless render check (stubbed WebGL, no GPU needed)
 | `src/main.js` | Scroll model, panel/dot/progress sync, custom cursor, preloader, clock |
 | `src/scene.js` | Three.js scene — materials, objects per station, keyframed camera, hover raycast |
 | `src/styles.css` | Clean editorial styling, responsive + reduced-motion support |
+| `public/cj/` | CJ hero model (`scene.gltf` + `scene.bin` + textures), served as static assets |
 
 ## How it works
 
 - **Scroll → camera.** Normalized scroll progress maps to a keyframed camera path
   (one keyframe per section, eased between keyframes). Mouse adds a subtle parallax.
-- **Stations.** Each section has its own 3D content: a sculpted GTA-style CJ in a
-  blaugrana jersey (home), a floating primitive cluster (about), four project pieces
-  on pedestals (work), a particle orbit (craft), and an iridescent orb (contact).
+- **Stations.** Each section has its own 3D content: a real CJ 3D model (glTF, loaded
+  via `GLTFLoader`) in a cap and shades, on a slow turntable (home), a floating
+  primitive cluster (about), four project pieces on pedestals (work), a particle orbit
+  (craft), and an iridescent orb (contact). A fully procedural CJ is kept as a
+  zero-dependency fallback if the glTF fails to load.
 - **Synced UI.** Fixed HTML panels fade/translate in based on distance from their
   keyframe, so text and 3D stay in lockstep.
 - **Polish.** PBR materials lit by a PMREM room environment, soft shadows, filmic
@@ -47,3 +50,11 @@ node smoke-test.mjs # headless render check (stubbed WebGL, no GPU needed)
 - [Three.js](https://threejs.org/) r160 — WebGL scene
 - [Vite](https://vitejs.dev/) — dev server & build
 - No framework — vanilla ES modules
+
+## Model & credits
+
+The hero character is a 3D model of CJ (Carl Johnson, *GTA: San Andreas*) created by
+[sabeshkumar](https://sketchfab.com/sabeshkumar), used under the
+[CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/) license from
+[Sketchfab](https://sketchfab.com/3d-models/cj-from-gta-sanandreas-ec17f6ada4b5441b9420233f785d81d8).
+Attribution also appears in the site footer.

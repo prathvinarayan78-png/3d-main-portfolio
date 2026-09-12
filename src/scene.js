@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const FOG_COLOR = 0xf2efe9;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -670,10 +671,13 @@ export function createScene(canvas, hooks = {}) {
     return m;
   }
 
-  /* 0 · hero — GTA-style street hero in a blaugrana jersey */
+  /* 0 · hero — real CJ model (glTF, CC-BY-4.0 sabeshkumar) with procedural fallback */
   const hero = new THREE.Group();
   scene.add(hero);
+
   const cJ = buildCJ();
+  let heroModel = cJ.group;
+  let heroIsFallback = true;
   hero.add(cJ.group);
   const heroHit = new THREE.Mesh(hitGeo, hitMat);
   heroHit.scale.setScalar(2.1);
@@ -682,6 +686,95 @@ export function createScene(canvas, hooks = {}) {
   const heroEntry = { group: hero, hit: heroHit, label: 'WEBGL', t: 0, base: 1 };
   hitToEntry.set(heroHit, heroEntry);
   hoverables.push(heroEntry);
+
+  try {
+    new GLTFLoader().load(
+      '/cj/scene.gltf',
+      (gltf) => {
+        const model = gltf.scene;
+        /* normalize: center on origin, scale to 3.2 units tall */
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const s = 3.2 / size.y;
+        const inner = new THREE.Group();
+        inner.add(model);
+        inner.scale.setScalar(s);
+        /* stand on the ground: feet at y=0, centered in x/z */
+        inner.position.set(-center.x * s, -box.min.y * s, -center.z * s);
+        hero.add(inner);
+        model.traverse((o) => {
+          if (o.isMesh) {
+            o.castShadow = true;
+            if (o.material) o.material.envMapIntensity = 0.7;
+          }
+        });
+        /* GLTFLoader sanitizes node names (strips ':'), so match loosely */
+        let headNode = null;
+        let torsoMesh = null;
+        model.traverse((o) => {
+          const n = (o.name || '').replace(/:/g, '');
+          if (!headNode && n === 'CJ_GTASAHead') headNode = o;
+          if (!torsoMesh && n.includes('Torso_lambert2')) torsoMesh = o;
+        });
+
+        /* ---- cap + brim + patch + shades, in model space (up +y, face +z)
+           measured head box: c(0, 1.449, 0.033), size(0.149, 0.183, 0.183), nose z≈0.124 ---- */
+        const capGroup = new THREE.Group();
+        {
+          /* crown: dome covering the top of the skull */
+          const crown = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18, 0, Math.PI * 2, 0, 2.0), matCapM);
+          crown.scale.set(0.084, 0.095, 0.099);
+          crown.position.set(0, 1.458, 0.02);
+          capGroup.add(crown);
+
+          /* brim: flat bar projecting forward at brow height */
+          const brim = new THREE.Mesh(new RoundedBoxGeometry(0.165, 0.02, 0.105, 2, 0.008), matCapM);
+          brim.position.set(0, 1.428, 0.128);
+          brim.rotation.x = 0.14;
+          capGroup.add(brim);
+
+          const button = new THREE.Mesh(new THREE.SphereGeometry(0.011, 8, 8), matCapM);
+          button.position.set(0, 1.553, 0.02);
+          capGroup.add(button);
+
+          /* Smoke & Drome patch on the front of the crown */
+          const patch = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.034), matCapPatch);
+          patch.position.set(0, 1.505, 0.112);
+          capGroup.add(patch);
+
+          /* shades */
+          const lensGeo = new RoundedBoxGeometry(0.048, 0.03, 0.02, 2, 0.007);
+          [-0.033, 0.033].forEach((lx) => {
+            const l = new THREE.Mesh(lensGeo, matGlasses);
+            l.position.set(lx, 1.45, 0.108);
+            capGroup.add(l);
+          });
+          const bridge = new THREE.Mesh(new RoundedBoxGeometry(0.03, 0.013, 0.013, 2, 0.005), matGlasses);
+          bridge.position.set(0, 1.452, 0.11);
+          capGroup.add(bridge);
+          [-0.068, 0.068].forEach((tx) => {
+            const t = new THREE.Mesh(new RoundedBoxGeometry(0.012, 0.012, 0.085, 2, 0.004), matGlasses);
+            t.position.set(tx, 1.45, 0.055);
+            capGroup.add(t);
+          });
+          capGroup.traverse((o) => {
+            if (o.isMesh) o.castShadow = true;
+          });
+        }
+        inner.add(capGroup);
+
+        window.__cjdiag = { s: +s.toFixed(4), head: !!headNode, torso: !!torsoMesh };
+        heroModel = inner;
+        cJ.group.visible = false;
+        heroIsFallback = false;
+      },
+      undefined,
+      (err) => console.warn('CJ glTF failed to load — procedural fallback in use', err)
+    );
+  } catch (err) {
+    console.warn('CJ glTF load error — procedural fallback in use', err);
+  }
 
   /* 1 · about — floating primitive cluster */
   const cluster = new THREE.Group();
@@ -905,11 +998,13 @@ export function createScene(canvas, hooks = {}) {
     camera.lookAt(vTgt);
 
     /* hero — the street hero */
-    cJ.group.rotation.y = tTime * 0.14;
-    cJ.group.position.y = Math.sin(tTime * 0.8) * 0.03;
-    cJ.head.rotation.y = Math.sin(tTime * 0.5) * 0.08;
-    cJ.head.rotation.x = Math.sin(tTime * 0.7) * 0.03;
-    cJ.pointArm.rotation.x = -1.0 + Math.sin(tTime * 1.6) * 0.05;
+    heroModel.rotation.y = tTime * 0.14;
+    heroModel.position.y = Math.sin(tTime * 0.8) * 0.03;
+    if (heroIsFallback) {
+      cJ.head.rotation.y = Math.sin(tTime * 0.5) * 0.08;
+      cJ.head.rotation.x = Math.sin(tTime * 0.7) * 0.03;
+      cJ.pointArm.rotation.x = -1.0 + Math.sin(tTime * 1.6) * 0.05;
+    }
     heroEntry.base = (0.9 + 0.1 * ie) * (1 + 0.012 * Math.sin(tTime * 0.8));
 
     /* about cluster */
