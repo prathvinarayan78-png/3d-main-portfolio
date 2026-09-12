@@ -2,16 +2,21 @@
    against a stubbed WebGL context. Catches runtime API misuse. */
 
 function fake2d() {
-  return {
-    fillStyle: null,
-    fillRect() {},
-    createRadialGradient() {
-      return { addColorStop() {} };
-    },
-    createLinearGradient() {
-      return { addColorStop() {} };
-    },
-  };
+  const grad = { addColorStop() {} };
+  return new Proxy(
+    {},
+    {
+      get(t, p) {
+        if (p === 'createRadialGradient' || p === 'createLinearGradient') return () => grad;
+        if (!(p in t)) t[p] = () => {};
+        return t[p];
+      },
+      set(t, p, v) {
+        t[p] = v;
+        return true;
+      },
+    }
+  );
 }
 
 function fakeCanvas() {

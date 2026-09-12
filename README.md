@@ -33,9 +33,9 @@ node smoke-test.mjs # headless render check (stubbed WebGL, no GPU needed)
 
 - **Scroll → camera.** Normalized scroll progress maps to a keyframed camera path
   (one keyframe per section, eased between keyframes). Mouse adds a subtle parallax.
-- **Stations.** Each section has its own 3D content: a chrome torus knot (hero), a
-  floating primitive cluster (about), four project pieces on pedestals (work), a
-  particle orbit (craft), and an iridescent orb (contact).
+- **Stations.** Each section has its own 3D content: a GTA-style street hero in a
+  blaugrana jersey (home), a floating primitive cluster (about), four project pieces
+  on pedestals (work), a particle orbit (craft), and an iridescent orb (contact).
 - **Synced UI.** Fixed HTML panels fade/translate in based on distance from their
   keyframe, so text and 3D stay in lockstep.
 - **Polish.** PBR materials lit by a PMREM room environment, soft shadows, filmic
