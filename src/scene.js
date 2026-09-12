@@ -156,6 +156,16 @@ export function createScene(canvas, hooks = {}) {
   const matIridescent = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.24, iridescence: 1, iridescenceIOR: 1.35, envMapIntensity: 1.1 });
   const matPedestal = new THREE.MeshPhysicalMaterial({ color: 0xe5ded0, metalness: 0, roughness: 0.85, envMapIntensity: 0.5 });
 
+  /* palette — mirrors the UI accents */
+  const COL = { teal: 0x2f8c7e, blue: 0x4a6fa5, rose: 0xb0587c, amber: 0xd9822b, sage: 0x6f7f52 };
+  const matTealMetal = new THREE.MeshPhysicalMaterial({ color: COL.teal, metalness: 1, roughness: 0.18, envMapIntensity: 1.3 });
+  const matBlueClay = new THREE.MeshPhysicalMaterial({ color: COL.blue, metalness: 0, roughness: 0.55, clearcoat: 0.3, clearcoatRoughness: 0.4, envMapIntensity: 0.8 });
+  const matRoseMetal = new THREE.MeshPhysicalMaterial({ color: COL.rose, metalness: 1, roughness: 0.2, flatShading: true, envMapIntensity: 1.3 });
+  const matAmberIrid = new THREE.MeshPhysicalMaterial({ color: COL.amber, metalness: 0.9, roughness: 0.25, iridescence: 1, iridescenceIOR: 1.35, envMapIntensity: 1.15 });
+  const matSageCeramic = new THREE.MeshPhysicalMaterial({ color: COL.sage, metalness: 0, roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.4, envMapIntensity: 0.8 });
+  const matTealCeramic = new THREE.MeshPhysicalMaterial({ color: COL.teal, metalness: 0, roughness: 0.5, clearcoat: 0.5, clearcoatRoughness: 0.4, envMapIntensity: 0.8 });
+  const matAmberMetal = new THREE.MeshPhysicalMaterial({ color: COL.amber, metalness: 1, roughness: 0.22, flatShading: true, envMapIntensity: 1.3 });
+
   const dotTex = makeDotTexture();
   const shadowTex = makeShadowTexture();
   const planeGeo = new THREE.PlaneGeometry(1, 1);
@@ -205,9 +215,9 @@ export function createScene(canvas, hooks = {}) {
   const cDefs = [
     [new RoundedBoxGeometry(0.56, 0.56, 0.56, 3, 0.07), matChrome],
     [new THREE.ConeGeometry(0.34, 0.64, 28), matAccent],
-    [new THREE.TorusGeometry(0.3, 0.115, 24, 56), matIridescent],
-    [new THREE.CapsuleGeometry(0.17, 0.34, 8, 20), matCeramic],
-    [new THREE.IcosahedronGeometry(0.32, 0), matChromeFlat],
+    [new THREE.TorusGeometry(0.3, 0.115, 24, 56), matSageCeramic],
+    [new THREE.CapsuleGeometry(0.17, 0.34, 8, 20), matTealCeramic],
+    [new THREE.IcosahedronGeometry(0.32, 0), matAmberMetal],
   ];
   cDefs.forEach(([geo, mat], i) => {
     const a = (i / cDefs.length) * Math.PI * 2;
@@ -237,21 +247,32 @@ export function createScene(canvas, hooks = {}) {
   }
   addWork(-7.5, () => {
     const cube = new THREE.Mesh(new RoundedBoxGeometry(1.5, 1.5, 1.5, 4, 0.16), matGlass);
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), matChromeFlat);
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), matTealMetal);
     cube.add(core);
     cube.userData.core = core;
     return cube;
   });
-  addWork(-2.5, () => new THREE.Mesh(makeBlob(0.88, 21, 0.26), matClay));
-  addWork(2.5, () => new THREE.Mesh(new THREE.IcosahedronGeometry(0.92, 0), matChromeFlat));
-  addWork(7.5, () => new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 32, 96), matIridescent));
+  addWork(-2.5, () => new THREE.Mesh(makeBlob(0.88, 21, 0.26), matBlueClay));
+  addWork(2.5, () => new THREE.Mesh(new THREE.IcosahedronGeometry(0.92, 0), matRoseMetal));
+  addWork(7.5, () => new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.3, 32, 96), matAmberIrid));
 
   /* 6 · craft — particle orbit + small chrome knot */
   const craft = new THREE.Group();
   craft.position.set(0, 0.6, -44);
   scene.add(craft);
-  function makeRing(count, radius, spread, ySpread, size, opacity) {
+  /* sunset color ramp for the orbit */
+  const CRAFT_RAMP = [0xd9822b, 0xb0587c, 0x4a6fa5, 0x2f8c7e].map((c) => new THREE.Color(c));
+  const rampCol = new THREE.Color();
+  function sampleRamp(t, out) {
+    const n = CRAFT_RAMP.length;
+    const x = (((t % 1) + 1) % 1) * n;
+    const i = Math.floor(x) % n;
+    out.copy(CRAFT_RAMP[i]).lerp(CRAFT_RAMP[(i + 1) % n], x - Math.floor(x));
+    return out;
+  }
+  function makeRing(count, radius, spread, ySpread, size, opacity, useRamp, flatColor) {
     const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
     const rand = mulberry32(count * 7 + 1);
     for (let i = 0; i < count; i++) {
       const a = rand() * Math.PI * 2;
@@ -259,16 +280,22 @@ export function createScene(canvas, hooks = {}) {
       pos[i * 3] = Math.cos(a) * r;
       pos[i * 3 + 1] = (rand() - 0.5) * ySpread * 2;
       pos[i * 3 + 2] = Math.sin(a) * r;
+      if (useRamp) sampleRamp(a / (Math.PI * 2), rampCol);
+      else rampCol.set(flatColor);
+      col[i * 3] = rampCol.r;
+      col[i * 3 + 1] = rampCol.g;
+      col[i * 3 + 2] = rampCol.b;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     return new THREE.Points(
       geo,
-      new THREE.PointsMaterial({ size, map: dotTex, color: 0x8d8271, transparent: true, opacity, depthWrite: false })
+      new THREE.PointsMaterial({ size, map: dotTex, vertexColors: true, transparent: true, opacity, depthWrite: false })
     );
   }
-  const ring1 = makeRing(850, 2.3, 0.55, 0.5, 0.05, 0.75);
-  const ring2 = makeRing(300, 3.35, 0.7, 0.3, 0.045, 0.4);
+  const ring1 = makeRing(850, 2.3, 0.55, 0.5, 0.05, 0.85, true);
+  const ring2 = makeRing(300, 3.35, 0.7, 0.3, 0.045, 0.5, false, 0xc9b59a);
   const craftKnot = new THREE.Mesh(new THREE.TorusKnotGeometry(0.5, 0.15, 140, 24), matChrome);
   craft.add(ring1, ring2, craftKnot);
 

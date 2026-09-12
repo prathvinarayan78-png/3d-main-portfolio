@@ -10,7 +10,13 @@
   --ink: #17140f;
   --muted: #6f695d;
   --line: rgba(23, 20, 15, 0.14);
-  --accent: #e4572e;
+  --c-orange: #e4572e;
+  --c-amber: #d9822b;
+  --c-rose: #b0587c;
+  --c-blue: #4a6fa5;
+  --c-teal: #2f8c7e;
+  --c-sage: #6f7f52;
+  --accent: var(--c-orange);
   --disp: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   --body: 'Inter', system-ui, -apple-system, sans-serif;
   --serif: 'Instrument Serif', Georgia, serif;
@@ -58,6 +64,10 @@ html.has-cursor button { cursor: none !important; }
 .bg-glow {
   position: fixed; inset: 0; z-index: 0;
   background:
+    radial-gradient(52% 44% at 10% 16%, rgba(217, 130, 43, 0.16) 0%, rgba(217, 130, 43, 0) 62%),
+    radial-gradient(48% 40% at 90% 24%, rgba(74, 111, 165, 0.12) 0%, rgba(74, 111, 165, 0) 60%),
+    radial-gradient(44% 38% at 78% 88%, rgba(176, 88, 124, 0.10) 0%, rgba(176, 88, 124, 0) 60%),
+    radial-gradient(40% 34% at 22% 78%, rgba(47, 140, 126, 0.08) 0%, rgba(47, 140, 126, 0) 60%),
     radial-gradient(120% 90% at 50% 8%, var(--bg-hi) 0%, rgba(250, 248, 243, 0) 55%),
     radial-gradient(150% 120% at 88% 112%, var(--bg-lo) 0%, rgba(229, 222, 209, 0) 58%),
     linear-gradient(180deg, #f5f2eb 0%, #efeae1 100%);
@@ -99,7 +109,7 @@ html.has-cursor button { cursor: none !important; }
   z-index: 20;
   transform: scaleX(0);
   transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--accent), #f0904b);
+  background: linear-gradient(90deg, var(--c-orange), var(--c-amber), var(--c-rose), var(--c-blue));
 }
 
 /* ---------- header ---------- */
@@ -167,8 +177,8 @@ html.has-cursor button { cursor: none !important; }
 .kicker::before {
   content: '';
   width: 26px; height: 1px;
-  background: var(--muted);
-  opacity: 0.6;
+  background: var(--accent, var(--muted));
+  opacity: 0.9;
 }
 .kicker.center { justify-content: center; }
 .kicker.center::before { display: none; }
@@ -306,6 +316,9 @@ body.ready .scroll-hint { opacity: 1; }
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   letter-spacing: -0.02em;
 }
+.stats li:nth-child(1) b { color: var(--c-teal); }
+.stats li:nth-child(2) b { color: var(--c-orange); }
+.stats li:nth-child(3) b { color: var(--c-blue); }
 .stats span {
   display: block;
   margin-top: 6px;
@@ -360,6 +373,11 @@ body.ready .scroll-hint { opacity: 1; }
   border-radius: 999px;
   color: var(--muted);
   background: rgba(250, 248, 243, 0.35);
+  transition: border-color 0.3s, color 0.3s;
+}
+.tags li:hover {
+  border-color: var(--accent, var(--c-orange));
+  color: var(--accent, var(--c-orange));
 }
 .work-meta {
   margin-top: 26px;
@@ -371,12 +389,15 @@ body.ready .scroll-hint { opacity: 1; }
   color: var(--muted);
   max-width: 33rem;
 }
+.work-meta span { color: var(--accent, var(--muted)); }
 .work-link {
   display: inline-flex; align-items: center; gap: 8px;
   font-weight: 500;
   color: var(--ink);
   letter-spacing: 0.04em;
+  transition: color 0.3s;
 }
+.work-link:hover { color: var(--accent, var(--c-orange)); }
 .work-link i { font-style: normal; transition: transform 0.4s var(--ease); }
 .work-link:hover i { transform: translateX(5px); }
 .panel-work .scrim { height: 55%; }
@@ -405,6 +426,11 @@ body.ready .scroll-hint { opacity: 1; }
   font-size: 0.95rem;
   color: var(--muted);
 }
+.craft-list li:nth-child(1) i { color: var(--c-orange); }
+.craft-list li:nth-child(2) i { color: var(--c-teal); }
+.craft-list li:nth-child(3) i { color: var(--c-blue); }
+.craft-list li:nth-child(4) i { color: var(--c-rose); }
+.craft-list li:nth-child(5) i { color: var(--c-amber); }
 .stack {
   position: absolute;
   right: var(--pad);
@@ -427,7 +453,9 @@ body.ready .scroll-hint { opacity: 1; }
   border-radius: 999px;
   color: var(--muted);
   background: rgba(250, 248, 243, 0.4);
+  transition: border-color 0.3s, color 0.3s;
 }
+.chips li:hover { border-color: var(--c-blue); color: var(--c-blue); }
 
 /* ---------- contact ---------- */
 
@@ -506,7 +534,7 @@ body.ready .scroll-hint { opacity: 1; }
   position: relative;
   transition: height 0.5s var(--ease), background 0.4s;
 }
-.dot.on { height: 20px; background: var(--ink); }
+.dot.on { height: 20px; background: var(--c-orange); }
 .dot::after {
   content: attr(data-label);
   position: absolute;
