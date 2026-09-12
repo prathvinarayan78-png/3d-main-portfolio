@@ -233,7 +233,9 @@ function makeJerseyTexture() {
   x.fill();
   x.restore();
 
-  return new THREE.CanvasTexture(c);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 function makeCapTexture() {
@@ -249,7 +251,9 @@ function makeCapTexture() {
   x.fillText('Smoke', 256, 118);
   x.font = 'italic 700 58px Georgia, "Times New Roman", serif';
   x.fillText('& Drome', 256, 210);
-  return new THREE.CanvasTexture(c);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 /* sculpted head: sphere with jaw, chin, cheeks, brow and flattened face plane */
@@ -296,7 +300,9 @@ function makeSleeveTexture() {
     x.fillStyle = s;
     x.fillRect(i * w, 0, w + 2, c.height);
   });
-  return new THREE.CanvasTexture(c);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 /* ---------- scene ---------- */
@@ -375,7 +381,7 @@ export function createScene(canvas, hooks = {}) {
   const matAmberMetal = new THREE.MeshPhysicalMaterial({ color: COL.amber, metalness: 1, roughness: 0.22, flatShading: true, envMapIntensity: 1.3 });
 
   /* hero character (GTA-style) materials */
-  const matSkin = new THREE.MeshPhysicalMaterial({ color: 0xa06a42, roughness: 0.68, sheen: 0.35, sheenColor: 0xd8a878, envMapIntensity: 0.5 });
+  const matSkin = new THREE.MeshPhysicalMaterial({ color: 0x9c6640, roughness: 0.7, sheen: 0.15, sheenColor: 0xb9825a, envMapIntensity: 0.45 });
   const matSleeveTex = new THREE.MeshPhysicalMaterial({ map: makeSleeveTexture(), roughness: 0.85, envMapIntensity: 0.5 });
   const matBelt = new THREE.MeshPhysicalMaterial({ color: 0x101014, roughness: 0.55 });
   const matGoldBuckle = new THREE.MeshPhysicalMaterial({ color: 0xd9a441, metalness: 0.8, roughness: 0.3 });
@@ -416,15 +422,15 @@ export function createScene(canvas, hooks = {}) {
     });
 
     /* pants */
-    [-0.18, 0.18].forEach((sx) => {
-      const l = new THREE.Mesh(new RoundedBoxGeometry(0.27, 0.8, 0.32, 2, 0.04), matPantsM);
+    [-0.19, 0.19].forEach((sx) => {
+      const l = new THREE.Mesh(new RoundedBoxGeometry(0.3, 0.8, 0.34, 2, 0.05), matPantsM);
       l.position.set(sx, 0.6, 0);
       g.add(l);
     });
-    const hips = new THREE.Mesh(new RoundedBoxGeometry(0.76, 0.45, 0.46, 2, 0.08), matPantsM);
+    const hips = new THREE.Mesh(new RoundedBoxGeometry(0.8, 0.45, 0.48, 2, 0.08), matPantsM);
     hips.position.y = 1.16;
     g.add(hips);
-    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.77, 0.07, 0.47), matBelt);
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.81, 0.07, 0.47), matBelt);
     belt.position.y = 1.38;
     g.add(belt);
     const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.025), matGoldBuckle);
@@ -433,11 +439,11 @@ export function createScene(canvas, hooks = {}) {
 
     /* jersey torso — lathe-turned profile, texture front faces the camera */
     const profile = [
-      [0.5, 0.0],
-      [0.47, 0.14],
-      [0.45, 0.32],
+      [0.52, 0.0],
+      [0.46, 0.14],
+      [0.43, 0.32],
       [0.47, 0.55],
-      [0.5, 0.75],
+      [0.52, 0.75],
       [0.45, 0.9],
       [0.32, 1.0],
       [0.19, 1.06],
@@ -447,25 +453,22 @@ export function createScene(canvas, hooks = {}) {
     torso.rotation.y = Math.PI;
     g.add(torso);
 
-    /* broad deltoids */
-    [-0.5, 0.5].forEach((sx) => {
-      const sh = new THREE.Mesh(new THREE.SphereGeometry(0.18, 14, 12), matSleeve);
-      sh.position.set(sx, 2.36, 0);
-      sh.scale.set(1.15, 0.95, 1.05);
+    /* shoulders — small, tucked into the torso */
+    [-0.47, 0.47].forEach((sx) => {
+      const sh = new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 12), matSleeve);
+      sh.position.set(sx, 2.3, 0);
+      sh.scale.set(1.1, 0.9, 1.0);
       g.add(sh);
     });
 
-    /* trapezius slope + neck */
-    const trap = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.14, 14), matJersey);
-    trap.position.y = 2.5;
-    g.add(trap);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.26, 12), matSkin);
-    neck.position.y = 2.52;
+    /* neck */
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.3, 12), matSkin);
+    neck.position.y = 2.48;
     g.add(neck);
 
     /* head — sculpted */
     const head = new THREE.Group();
-    head.position.y = 2.92;
+    head.position.y = 2.87;
     g.add(head);
 
     const skull = new THREE.Mesh(makeHeadGeometry(), matSkin);
@@ -480,13 +483,13 @@ export function createScene(canvas, hooks = {}) {
       head.add(e);
     });
 
-    /* nose: bridge + tip */
-    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 10), matSkin);
-    nose.rotation.x = 1.95;
-    nose.position.set(0, -0.02, 0.34);
+    /* nose: small bridge + tip */
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.1, 10), matSkin);
+    nose.rotation.x = 1.9;
+    nose.position.set(0, -0.03, 0.335);
     head.add(nose);
-    const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 10, 8), matSkin);
-    noseTip.position.set(0, -0.075, 0.395);
+    const noseTip = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), matSkin);
+    noseTip.position.set(0, -0.075, 0.375);
     head.add(noseTip);
 
     /* sunglasses: rounded lenses, bridge, temples */
@@ -529,69 +532,70 @@ export function createScene(canvas, hooks = {}) {
     mouth.position.set(0, -0.235, 0.3);
     head.add(mouth);
     const goatee = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.075, 0.035), matMustache);
-    goatee.position.set(0, -0.325, 0.29);
+    goatee.position.set(0, -0.325, 0.31);
     head.add(goatee);
 
-    /* hair curls (kept clear of the face and the cap) */
-    const hairGeo = new THREE.IcosahedronGeometry(0.1, 0);
-    const rand = mulberry32(42);
-    for (let i = 0; i < 40; i++) {
+    /* hair: tight curls hugging the sides and back, never the face */
+    const hairGeo = new THREE.IcosahedronGeometry(0.055, 0);
+    const rand = mulberry32(7);
+    for (let i = 0; i < 44; i++) {
       const a = rand() * Math.PI * 2;
-      const y = -0.3 + rand() * 0.52;
-      const hx = Math.cos(a) * 0.345;
-      const hz = Math.sin(a) * 0.335;
-      if (y > 0.14) continue; // cap covers the top
-      if (hz > 0.12 && y > -0.18 && Math.abs(hx) < 0.3) continue; // keep the face clear
+      const y = -0.3 + rand() * 0.36; // low: jaw line up to the cap edge
+      const hx = Math.cos(a) * 0.325;
+      const hz = Math.sin(a) * 0.315;
+      const isBack = hz < -0.05;
+      const isSide = hz < 0.12 && Math.abs(hx) > 0.21;
+      if (!isBack && !isSide) continue;
       const h = new THREE.Mesh(hairGeo, matHair);
       h.position.set(hx, y, hz);
-      h.scale.setScalar(0.7 + rand() * 0.6);
+      h.scale.setScalar(0.7 + rand() * 0.5);
       head.add(h);
     }
 
-    /* cap: dome, brim + rim, button */
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.37, 22, 16, 0, Math.PI * 2, 0, 1.75), matCapM);
-    cap.position.y = 0.05;
-    cap.scale.set(1, 0.94, 1.04);
+    /* cap: snug dome, brim + rim, button */
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.355, 22, 16, 0, Math.PI * 2, 0, 1.6), matCapM);
+    cap.position.y = 0.04;
+    cap.scale.set(1, 0.9, 1.02);
     head.add(cap);
-    const brim = new THREE.Mesh(new RoundedBoxGeometry(0.52, 0.045, 0.34, 2, 0.02), matCapM);
-    brim.position.set(0, 0.0, 0.45);
-    brim.rotation.x = -0.24;
+    const brim = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.04, 0.32, 2, 0.02), matCapM);
+    brim.position.set(0, -0.01, 0.42);
+    brim.rotation.x = -0.22;
     head.add(brim);
-    const brimRim = new THREE.Mesh(new RoundedBoxGeometry(0.54, 0.02, 0.36, 2, 0.01), matCapM);
-    brimRim.position.set(0, -0.02, 0.45);
-    brimRim.rotation.x = -0.24;
+    const brimRim = new THREE.Mesh(new RoundedBoxGeometry(0.52, 0.02, 0.34, 2, 0.01), matCapM);
+    brimRim.position.set(0, -0.03, 0.42);
+    brimRim.rotation.x = -0.22;
     head.add(brimRim);
     const button = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), matCapM);
-    button.position.y = 0.4;
+    button.position.y = 0.36;
     head.add(button);
     /* "Smoke & Drome" patch */
     const patch = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.24), matCapPatch);
-    patch.position.set(0, 0.2, 0.352);
-    patch.rotation.x = -0.3;
+    patch.position.set(0, 0.18, 0.33);
+    patch.rotation.x = -0.35;
     head.add(patch);
 
     /* arms — striped capsule sleeves, proper fists */
     function makeArm(side) {
       const armG = new THREE.Group();
-      armG.position.set(side * 0.56, 2.34, 0);
+      armG.position.set(side * 0.5, 2.3, 0.02);
       if (side === -1) {
-        armG.rotation.x = 1.05;
-        armG.rotation.z = 0.35;
+        armG.rotation.x = -1.0;
+        armG.rotation.z = 0.3;
       } else {
-        armG.rotation.x = 0.18;
-        armG.rotation.z = -0.12;
+        armG.rotation.x = -0.12;
+        armG.rotation.z = -0.1;
       }
       const up = new THREE.Mesh(new THREE.CapsuleGeometry(0.115, 0.42, 6, 12), matSleeveTex);
       up.position.y = -0.3;
       armG.add(up);
       const elbow = new THREE.Group();
       elbow.position.y = -0.58;
-      elbow.rotation.x = side === -1 ? 0.35 : 0.3;
+      elbow.rotation.x = side === -1 ? -0.3 : -0.15;
       armG.add(elbow);
       const fore = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.38, 6, 12), matSleeveTex);
       fore.position.y = -0.24;
       elbow.add(fore);
-      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.13, 0.1, 12), matWhiteTrim);
+      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.12, 0.1, 12), matWhiteTrim);
       cuff.position.y = -0.48;
       elbow.add(cuff);
 
@@ -905,7 +909,7 @@ export function createScene(canvas, hooks = {}) {
     cJ.group.position.y = Math.sin(tTime * 0.8) * 0.03;
     cJ.head.rotation.y = Math.sin(tTime * 0.5) * 0.08;
     cJ.head.rotation.x = Math.sin(tTime * 0.7) * 0.03;
-    cJ.pointArm.rotation.x = 1.05 + Math.sin(tTime * 1.6) * 0.05;
+    cJ.pointArm.rotation.x = -1.0 + Math.sin(tTime * 1.6) * 0.05;
     heroEntry.base = (0.9 + 0.1 * ie) * (1 + 0.012 * Math.sin(tTime * 0.8));
 
     /* about cluster */
