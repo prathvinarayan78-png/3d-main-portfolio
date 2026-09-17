@@ -73,15 +73,17 @@ export default function Scene() {
       {/* Dusk palette: a bright midday sky washed out the cream overlay text.
           A low sun keeps the forest readable while the sky stays dark enough
           for light type to sit on top of it. */}
-      <color attach="background" args={['#1b2a33']} />
-      <fogExp2 attach="fog" args={['#22323c', 0.0135]} />
+      <color attach="background" args={['#101b23']} />
+      <fogExp2 attach="fog" args={['#18262f', 0.015]} />
 
+      {/* Sun pushed just below the horizon: keeps the warm dusk glow but stops
+          the sky from being a bright field behind the (now unscrimmed) copy. */}
       <Sky
-        sunPosition={[18, 1.6, -80]}
-        turbidity={11}
-        rayleigh={2.9}
-        mieCoefficient={0.009}
-        mieDirectionalG={0.86}
+        sunPosition={[18, 0.35, -80]}
+        turbidity={13}
+        rayleigh={3.4}
+        mieCoefficient={0.008}
+        mieDirectionalG={0.88}
       />
       <ambientLight intensity={0.3} />
       <hemisphereLight args={['#4d6d86', '#1d2b18', 0.6]} />
@@ -115,9 +117,10 @@ export default function Scene() {
       <EffectComposer disableNormalPass>
         <DepthOfField focusDistance={0.012} focalLength={0.05} bokehScale={2.6} height={480} />
         <Bloom intensity={0.5} luminanceThreshold={0.62} luminanceSmoothing={0.35} mipmapBlur />
-        {/* Heavier vignette pulls the frame edges down, which is exactly where
-            the overlay copy sits. */}
-        <Vignette eskil={false} offset={0.1} darkness={0.95} />
+        {/* With the scrim gone the vignette does the heavy lifting: it darkens
+            the frame edges where the copy sits, but as a soft optical falloff
+            rather than a visible mask. */}
+        <Vignette eskil={false} offset={0.06} darkness={1.15} />
       </EffectComposer>
     </Canvas>
   );
