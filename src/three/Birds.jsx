@@ -56,12 +56,13 @@ export default function Birds({ count = 40 }) {
   const birds = useMemo(
     () =>
       Array.from({ length: count }, () => ({
-        radius: 26 + Math.random() * 46,
-        height: 17 + Math.random() * 20,
+        // Far out and high: these are background specks behind Wildlife.jsx.
+        radius: 62 + Math.random() * 55,
+        height: 30 + Math.random() * 26,
         speed: 0.055 + Math.random() * 0.075,
         offset: Math.random() * Math.PI * 2,
         z: -Math.random() * 170,
-        scale: 0.5 + Math.random() * 0.7,
+        scale: 0.36 + Math.random() * 0.4,
       })),
     [count]
   );

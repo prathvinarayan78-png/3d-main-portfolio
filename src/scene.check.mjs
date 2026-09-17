@@ -46,4 +46,51 @@ for (const s of sections) {
   assert.ok(s.id && s.kicker && s.title && s.body, `section "${s.id}" is missing copy`);
 }
 
-console.log(`ok — ${sections.length} sections, camera minY ${minY.toFixed(2)}`);
+// 5. Wildlife must be spread, not clustered. Mirrors the tables in Wildlife.jsx.
+const FLYERS = [
+  [-58, 27, -44],
+  [-52, 29, -50],
+  [-34, 13, -110],
+  [26, 30, -170],
+];
+const GROUNDERS = [
+  [-15.5, 0, -12],
+  [19, 0, -80],
+  [13.5, 0, -140],
+];
+
+// Ground animals walk circles the camera passes close to, so they need real
+// separation. The flamingo pair is deliberately together (they flock), so
+// flyers are checked on depth spread rather than pairwise distance.
+for (let i = 0; i < GROUNDERS.length; i++) {
+  for (let j = i + 1; j < GROUNDERS.length; j++) {
+    const d = Math.hypot(...GROUNDERS[i].map((v, k) => v - GROUNDERS[j][k]));
+    assert.ok(d > 30, `ground animals ${i}/${j} are clustered (${d.toFixed(1)}m apart)`);
+  }
+}
+
+// No more than two animals may share any 30m slice of the corridor — and the
+// only permitted pair is the two flamingos, which flock on purpose.
+const depths = [...FLYERS, ...GROUNDERS].map((p) => p[2]);
+for (const d of depths) {
+  const near = depths.filter((o) => Math.abs(o - d) < 30);
+  assert.ok(near.length <= 2, `too many animals bunched near z=${d} (${near.length})`);
+}
+// The flamingos (first two) are the pair; every other flyer must be solo.
+const soloFlyers = FLYERS.slice(2).map((p) => p[2]);
+for (const d of soloFlyers) {
+  const near = depths.filter((o) => Math.abs(o - d) < 30).length;
+  assert.ok(near === 1, `flyer at z=${d} should be solo but has company`);
+}
+
+// Ground animals must stay clear of the camera corridor (|x| < 8 is the path).
+for (const [x, , z] of GROUNDERS) {
+  assert.ok(Math.abs(x) > 9, `ground animal at z=${z} stands in the camera path`);
+}
+
+console.log(
+  `ok — ${sections.length} sections, camera minY ${minY.toFixed(2)}, ` +
+    `${FLYERS.length} flyers + ${GROUNDERS.length} ground animals spread over ${Math.abs(
+      Math.min(...depths)
+    )}m`
+);

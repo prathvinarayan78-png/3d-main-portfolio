@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import Forest from './Forest';
 import Grass from './Grass';
 import Birds from './Birds';
+import Wildlife from './Wildlife';
 import { scroll } from '../scroll';
 
 // Camera waypoints, one per section. The rig reads scroll.progress every frame
@@ -105,7 +106,10 @@ export default function Scene() {
         <Ground />
         <Forest />
         <Grass />
-        <Birds />
+        {/* Tiny silhouettes, pushed far out — these read as distant specks and
+            give the sky depth behind the detailed models. */}
+        <Birds count={14} />
+        <Wildlife />
         <Clouds material={THREE.MeshBasicMaterial} limit={60}>
           <Cloud seed={2} position={[-34, 34, -74]} speed={0.12} opacity={0.22} bounds={[18, 4, 12]} color="#8c7f94" />
           <Cloud seed={7} position={[40, 40, -128]} speed={0.1} opacity={0.18} bounds={[22, 5, 14]} color="#7d768f" />
