@@ -26,7 +26,7 @@ export default function Birds({ count = 40 }) {
 
   const material = useMemo(() => {
     const m = new THREE.MeshBasicMaterial({
-      color: '#20242b',
+      color: '#11151b',
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.85,

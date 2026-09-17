@@ -1,7 +1,8 @@
 :root {
-  --ink: #0f1410;
-  --paper: #f4f1e8;
-  --accent: #d8b45a;
+  --ink: #0b0f0c;
+  --paper: #fbf9f4;
+  /* Warmer, brighter gold — the old #d8b45a muddied against foliage. */
+  --accent: #f2c96b;
   --serif: 'Instrument Serif', Georgia, serif;
   --sans: 'Inter', system-ui, sans-serif;
 }
@@ -43,6 +44,49 @@ body {
   align-items: center;
   padding: 0 clamp(1.5rem, 7vw, 10rem);
   pointer-events: none;
+  position: relative;
+}
+
+/* Readability scrim. The 3D scene behind the copy changes brightness as the
+   camera moves, so contrast can't rely on the scene alone — this guarantees a
+   dark base under the text while staying invisible as a "box". */
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(8, 12, 10, 0.88) 0%,
+    rgba(8, 12, 10, 0.72) 28%,
+    rgba(8, 12, 10, 0.28) 52%,
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.panel.visible::before {
+  opacity: 1;
+}
+
+.panel:nth-child(even)::before {
+  background: linear-gradient(
+    260deg,
+    rgba(8, 12, 10, 0.88) 0%,
+    rgba(8, 12, 10, 0.72) 28%,
+    rgba(8, 12, 10, 0.28) 52%,
+    transparent 72%
+  );
+}
+
+.panel.hero::before {
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 50%,
+    rgba(8, 12, 10, 0.82) 0%,
+    rgba(8, 12, 10, 0.6) 45%,
+    transparent 78%
+  );
 }
 
 /* Alternate sides so the 3D scene stays visible through the layout. */
@@ -56,6 +100,8 @@ body {
 }
 
 .inner {
+  position: relative;
+  z-index: 1;
   max-width: 34rem;
   opacity: 0;
   transform: translateY(2.2rem);
@@ -81,6 +127,7 @@ body {
   color: var(--accent);
   margin-bottom: 1.1rem;
   font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .display {
@@ -88,7 +135,10 @@ body {
   font-size: clamp(4.5rem, 17vw, 13rem);
   line-height: 0.88;
   letter-spacing: -0.02em;
-  text-shadow: 0 0.3rem 3rem rgba(0, 0, 0, 0.35);
+  color: #fff;
+  /* Layered shadows: a tight one for edge definition against foliage, a wide
+     one to lift the whole word off a bright sky. */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0.3rem 3rem rgba(0, 0, 0, 0.75);
 }
 
 .heading {
@@ -97,7 +147,8 @@ body {
   line-height: 1.02;
   white-space: pre-line;
   letter-spacing: -0.015em;
-  text-shadow: 0 0.2rem 2.4rem rgba(0, 0, 0, 0.4);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0.2rem 2.4rem rgba(0, 0, 0, 0.7);
 }
 
 .lead {
@@ -106,16 +157,18 @@ body {
   text-transform: uppercase;
   margin-top: 1.6rem;
   color: #fff;
-  font-weight: 300;
+  font-weight: 400;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .body {
   margin-top: 1.4rem;
   font-size: clamp(0.98rem, 1.5vw, 1.12rem);
   line-height: 1.65;
-  font-weight: 300;
-  color: rgba(244, 241, 232, 0.88);
-  text-shadow: 0 0.1rem 1.4rem rgba(0, 0, 0, 0.5);
+  /* 300 was too thin to hold up over a moving scene. */
+  font-weight: 400;
+  color: rgba(251, 249, 244, 0.96);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0.1rem 1.4rem rgba(0, 0, 0, 0.6);
 }
 
 .meta {
@@ -131,10 +184,11 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.42rem 0.85rem;
-  border: 1px solid rgba(244, 241, 232, 0.28);
+  border: 1px solid rgba(242, 201, 107, 0.34);
   border-radius: 999px;
-  backdrop-filter: blur(8px);
-  background: rgba(15, 20, 16, 0.22);
+  backdrop-filter: blur(10px);
+  background: rgba(8, 12, 10, 0.55);
+  color: rgba(251, 249, 244, 0.95);
 }
 
 .mail {
@@ -144,9 +198,10 @@ body {
   font-size: clamp(1.4rem, 3.4vw, 2.4rem);
   color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(216, 180, 90, 0.4);
+  border-bottom: 1px solid rgba(242, 201, 107, 0.5);
   pointer-events: auto;
-  transition: border-color 0.3s;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  transition: border-color 0.3s, color 0.3s;
 }
 
 .mail:hover {
@@ -163,8 +218,12 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1.6rem clamp(1.5rem, 5vw, 3rem);
-  mix-blend-mode: difference;
   pointer-events: none;
+  color: var(--paper);
+  /* `mix-blend-mode: difference` inverted unpredictably as the scene changed
+     brightness; an explicit colour + fade is reliable. */
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(to bottom, rgba(8, 12, 10, 0.6), transparent);
 }
 
 .mark {
@@ -177,7 +236,7 @@ body {
   font-size: 0.66rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  opacity: 0.75;
+  opacity: 0.88;
 }
 
 .dots {
@@ -196,9 +255,10 @@ body {
   height: 7px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(244, 241, 232, 0.55);
-  background: transparent;
+  border: 1px solid rgba(251, 249, 244, 0.7);
+  background: rgba(8, 12, 10, 0.45);
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   transition: all 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -224,10 +284,12 @@ body {
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
+  color: var(--paper);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
 }
 
 .hint.show {
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 .hint i {

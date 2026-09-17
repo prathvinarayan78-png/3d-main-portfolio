@@ -17,7 +17,7 @@ export default function Grass({ count = 40000, area = 200 }) {
 
   const material = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({
-      color: '#4a7a35',
+      color: '#38602a',
       side: THREE.DoubleSide,
       roughness: 0.9,
       metalness: 0,
