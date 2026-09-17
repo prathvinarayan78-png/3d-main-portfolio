@@ -58,9 +58,9 @@ function Ground() {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, -70]} receiveShadow>
       <planeGeometry args={[520, 520]} />
-      {/* Darker than the grass: any gap between blades should read as shadowed
-          earth under a canopy, which makes the field look thicker than it is. */}
-      <meshStandardMaterial color="#111d0e" roughness={1} metalness={0} />
+      {/* Slightly darker than the grass so gaps read as shadowed earth -- but
+          #111d0e was near-black and turned every gap into a hole. */}
+      <meshStandardMaterial color="#38491f" roughness={1} metalness={0} />
     </mesh>
   );
 }
@@ -70,30 +70,37 @@ export default function Scene() {
     <Canvas
       shadows
       dpr={[1, 1.75]}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      // ACES (the r3f default) rolls highlights off hard and compounded every
+      // other darkening change. Exposure is now explicit so brightness is a
+      // single tunable number rather than an emergent accident.
+      gl={{
+        antialias: true,
+        powerPreference: 'high-performance',
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.35,
+      }}
       camera={{ fov: 52, near: 0.1, far: 900, position: [0, 2.6, 12] }}
     >
-      {/* Dusk palette: a bright midday sky washed out the cream overlay text.
-          A low sun keeps the forest readable while the sky stays dark enough
-          for light type to sit on top of it. */}
-      <color attach="background" args={['#101b23']} />
-      <fogExp2 attach="fog" args={['#18262f', 0.015]} />
+      {/* Golden hour, not night. The sun had crept to 0.25 degrees of
+          elevation, which makes the Sky shader output almost no light at all;
+          combined with ACES tone mapping the whole frame crushed to black.
+          ~7 degrees keeps the warm dusk mood while actually lighting the scene. */}
+      <color attach="background" args={['#2c4152']} />
+      <fogExp2 attach="fog" args={['#3c5364', 0.0085]} />
 
-      {/* Sun pushed just below the horizon: keeps the warm dusk glow but stops
-          the sky from being a bright field behind the (now unscrimmed) copy. */}
       <Sky
-        sunPosition={[18, 0.35, -80]}
-        turbidity={13}
-        rayleigh={3.4}
-        mieCoefficient={0.008}
-        mieDirectionalG={0.88}
+        sunPosition={[18, 10, -80]}
+        turbidity={9}
+        rayleigh={2.2}
+        mieCoefficient={0.007}
+        mieDirectionalG={0.84}
       />
-      <ambientLight intensity={0.3} />
-      <hemisphereLight args={['#4d6d86', '#1d2b18', 0.6]} />
+      <ambientLight intensity={0.85} />
+      <hemisphereLight args={['#8fb6d8', '#3d5228', 1.15]} />
       <directionalLight
-        position={[24, 11, -34]}
-        intensity={2.1}
-        color="#ffb86b"
+        position={[26, 20, -34]}
+        intensity={3.1}
+        color="#ffc98a"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-70}
@@ -121,12 +128,13 @@ export default function Scene() {
       <Rig />
 
       <EffectComposer disableNormalPass>
-        <DepthOfField focusDistance={0.012} focalLength={0.05} bokehScale={2.6} height={480} />
-        <Bloom intensity={0.5} luminanceThreshold={0.62} luminanceSmoothing={0.35} mipmapBlur />
-        {/* With the scrim gone the vignette does the heavy lifting: it darkens
-            the frame edges where the copy sits, but as a soft optical falloff
-            rather than a visible mask. */}
-        <Vignette eskil={false} offset={0.06} darkness={1.15} />
+        {/* focusDistance 0.012 focused ~1m from the lens, so everything the
+            camera actually looks at was blurred into mush. */}
+        <DepthOfField focusDistance={0.055} focalLength={0.18} bokehScale={1.8} height={480} />
+        <Bloom intensity={0.55} luminanceThreshold={0.55} luminanceSmoothing={0.35} mipmapBlur />
+        {/* Was 1.15 (effectively max) with a 0.06 offset, which crushed the
+            frame edges to pure black -- exactly where the copy sits. */}
+        <Vignette eskil={false} offset={0.28} darkness={0.55} />
       </EffectComposer>
     </Canvas>
   );

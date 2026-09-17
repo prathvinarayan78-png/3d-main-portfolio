@@ -44,6 +44,7 @@ src/
   scene.check.mjs     Runnable check
   wildlife.check.mjs  Verifies every GLB loads, clones and animates
   grass.check.mjs     Verifies field coverage, evenness and determinism
+  lighting.check.mjs  Guards against the scene crushing to black
   three/
     Scene.jsx         Canvas, lighting, post-processing, camera rig
     Forest.jsx        ez-tree generation + deterministic placement
