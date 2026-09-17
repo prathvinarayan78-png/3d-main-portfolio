@@ -57,8 +57,10 @@ function Rig() {
 function Ground() {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, -70]} receiveShadow>
-      <planeGeometry args={[420, 420]} />
-      <meshStandardMaterial color="#1e2e19" roughness={1} metalness={0} />
+      <planeGeometry args={[520, 520]} />
+      {/* Darker than the grass: any gap between blades should read as shadowed
+          earth under a canopy, which makes the field look thicker than it is. */}
+      <meshStandardMaterial color="#111d0e" roughness={1} metalness={0} />
     </mesh>
   );
 }

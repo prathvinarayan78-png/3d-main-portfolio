@@ -43,10 +43,12 @@ src/
   styles.css
   scene.check.mjs     Runnable check
   wildlife.check.mjs  Verifies every GLB loads, clones and animates
+  grass.check.mjs     Verifies field coverage, evenness and determinism
   three/
     Scene.jsx         Canvas, lighting, post-processing, camera rig
     Forest.jsx        ez-tree generation + deterministic placement
-    Grass.jsx         40k instanced blades, GPU wind
+    Grass.jsx         120k instanced cross-quad blades, GPU wind
+    grassField.js     Pure blade-placement maths (clumping, corridor bias)
     Birds.jsx         Distant silhouette flock, vertex-shader wing flap
     Wildlife.jsx      Animated GLB animals on hand-authored paths
 public/models/        Flamingo, Parrot, Stork, Horse (MIT), Fox (CC0)
@@ -77,7 +79,9 @@ instanced (1 draw call each), DPR capped at 1.75, and shadow cameras are tightly
 - **Copy** — edit `src/content.js`. Adding a section requires adding a matching camera waypoint
   to `PATH` in `src/three/Scene.jsx`; `scene.check.mjs` fails if you forget.
 - **Email** — the placeholder `hello@prathvi.design` is in the last section of `content.js`.
-- **Forest density** — `<Forest count={26} />` and `<Grass count={40000} />` in `Scene.jsx`.
+- **Forest density** — `<Forest count={26} />` in `Scene.jsx`. Grass auto-scales
+  (120k blades on desktop, 45k on small or low-core devices); override with
+  `<Grass count={80000} />`. Field extent and clumping live in `grassField.js`.
 
 ## Credits
 
