@@ -95,9 +95,9 @@ export default function Grass({ count, cross = true }) {
           `#include <dithering_fragment>
            // Ramp from a deep shadowed base to a warmer sunlit tip, varied per
            // blade — a single flat green is the main thing that reads as fake.
-           vec3 base = mix(vec3(0.115, 0.185, 0.085), vec3(0.165, 0.245, 0.105), vTint);
-           vec3 tip  = mix(vec3(0.34, 0.47, 0.18),   vec3(0.52, 0.60, 0.24),  vTint);
-           gl_FragColor.rgb *= mix(base, tip, pow(vH, 1.1)) * 3.4;`
+           vec3 base = mix(vec3(0.055, 0.105, 0.045), vec3(0.10, 0.16, 0.06), vTint);
+           vec3 tip  = mix(vec3(0.26, 0.38, 0.14),  vec3(0.42, 0.50, 0.19), vTint);
+           gl_FragColor.rgb *= mix(base, tip, pow(vH, 1.35)) * 3.4;`
         );
     };
     return m;
