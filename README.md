@@ -86,8 +86,16 @@ src/
     wildlifePaths.js    Pure placement + wander/fly maths
     Atmosphere.jsx      Drifting motes, layered mist
   checks/               Runnable checks (no framework)
-public/models/          5 animated GLBs
+src/models/             5 animated GLBs (inlined into the bundle)
 ```
+
+**Models are inlined, not fetched.** The five GLBs live in `src/models/` and are
+imported with `?inlineglb`, a small plugin in `vite.config.js` that encodes them
+as base64 data URIs. Served as ordinary files they are binary HTTP responses,
+which some preview proxies answer with a 502 — and a single failed `useGLTF`
+throw inside `<Canvas>` blanks the whole 3D scene. Inlining removes the network
+round-trip, and each animal additionally sits behind its own error boundary in
+`Wildlife.jsx`, so a casualty is one missing animal rather than a black screen.
 
 **The scroll → camera link bypasses React.** Lenis writes `scroll.progress` to a
 plain object; the camera rig reads it inside `useFrame` and interpolates along a

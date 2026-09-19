@@ -14,12 +14,15 @@
 // authored at centimetre scale AND the bbox includes wingspan, so eyeballing
 // the numbers put every animal 3-8x oversized (a 10m flamingo).
 // Verified by the height assertion in checks/wildlife.check.mjs.
+// `file` is resolved to a bundled data URI by three/modelUrls.js. The models
+// deliberately do NOT live in public/: the preview proxy 502s on binary
+// responses, so they are inlined into the JS bundle instead of fetched.
 export const MODELS = {
-  Flamingo: { url: '/models/Flamingo.glb', scale: 0.0029 }, // ~1.2m
-  Parrot: { url: '/models/Parrot.glb', scale: 0.0021 }, // ~0.35m
-  Stork: { url: '/models/Stork.glb', scale: 0.0065 }, // ~1.1m
-  Horse: { url: '/models/Horse.glb', scale: 0.0079 }, // ~2.4m
-  Fox: { url: '/models/Fox.glb', scale: 0.0089 }, // ~0.7m
+  Flamingo: { file: 'Flamingo.glb', scale: 0.0029 }, // ~1.2m
+  Parrot: { file: 'Parrot.glb', scale: 0.0021 }, // ~0.35m
+  Stork: { file: 'Stork.glb', scale: 0.0065 }, // ~1.1m
+  Horse: { file: 'Horse.glb', scale: 0.0079 }, // ~2.4m
+  Fox: { file: 'Fox.glb', scale: 0.0089 }, // ~0.7m
 };
 
 // Flyers travel long, lazy ellipses. Birds that orbit a tight circle read as

@@ -29,7 +29,7 @@ const used = new Set([...FLYERS.map((f) => f.model), ...GROUNDERS.map((g) => g.m
 for (const key of used) assert.ok(MODELS[key], `path references unknown model "${key}"`);
 
 for (const [name, cfg] of Object.entries(MODELS)) {
-  const path = `public${cfg.url}`;
+  const path = `src/models/${cfg.file}`;
   assert.ok(fs.existsSync(path), `${path} is missing`);
 
   const buf = fs.readFileSync(path);
@@ -83,7 +83,7 @@ for (const [name, cfg] of Object.entries(MODELS)) {
 // Ground animals must use clips that exist, or the cross-fade silently no-ops.
 for (const g of GROUNDERS) {
   if (!g.walk) continue;
-  const path = `public${MODELS[g.model].url}`;
+  const path = `src/models/${MODELS[g.model].file}`;
   const buf = fs.readFileSync(path);
   const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   await new Promise((resolve, reject) => {

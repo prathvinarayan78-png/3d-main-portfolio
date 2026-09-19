@@ -18,7 +18,10 @@ export const getActive = () => scroll.active;
 let lenis = null;
 
 export function startLenis() {
-  lenis = new Lenis({
+  // Local handle: StrictMode mounts twice, and the first cleanup nulls the
+  // module-level `lenis` while this loop is still scheduled. Closing over the
+  // instance keeps the two lifecycles independent.
+  const instance = new Lenis({
     // Long, heavy easing — the brief is "calm", and a snappy scroll fights that.
     duration: 1.9,
     easing: (t) => 1 - Math.pow(1 - t, 3.2),
@@ -28,7 +31,9 @@ export function startLenis() {
     wheelMultiplier: 0.85,
   });
 
-  lenis.on('scroll', ({ scroll: y, limit, velocity }) => {
+  lenis = instance;
+
+  instance.on('scroll', ({ scroll: y, limit, velocity }) => {
     scroll.progress = limit > 0 ? Math.min(Math.max(y / limit, 0), 1) : 0;
     scroll.velocity = velocity;
     const next = Math.round(scroll.progress * (scroll.count - 1));
@@ -39,14 +44,14 @@ export function startLenis() {
   });
 
   let raf = requestAnimationFrame(function loop(time) {
-    lenis.raf(time);
+    instance.raf(time);
     raf = requestAnimationFrame(loop);
   });
 
   return () => {
     cancelAnimationFrame(raf);
-    lenis.destroy();
-    lenis = null;
+    instance.destroy();
+    if (lenis === instance) lenis = null;
   };
 }
 

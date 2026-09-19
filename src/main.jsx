@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client';
 import Scene from './three/Scene';
 import Overlay from './Overlay';
 import { startLenis } from './scroll';
+import { ErrorReport, installGlobalReporting } from './ErrorReport';
 import './styles.css';
+
+installGlobalReporting();
 
 function App() {
   const [ready, setReady] = useState(false);
@@ -25,7 +28,9 @@ function App() {
         <span className="loader-mark">Prathvi</span>
       </div>
       <div className="stage">
-        <Scene />
+        <ErrorReport>
+          <Scene />
+        </ErrorReport>
       </div>
       <Overlay />
     </>

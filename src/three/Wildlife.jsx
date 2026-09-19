@@ -1,11 +1,40 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { Component, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import * as THREE from 'three';
 import { MODELS, FLYERS, GROUNDERS, wanderAt, flyAt } from './wildlifePaths';
+import { urlFor } from './modelUrls';
 
-Object.values(MODELS).forEach((m) => useGLTF.preload(m.url));
+Object.values(MODELS).forEach((m) => useGLTF.preload(urlFor(m.file)));
+
+/*
+  One animal must never be able to take down the scene. useGLTF throws on a
+  failed load, and an uncaught throw inside <Canvas> unmounts the whole 3D
+  subtree — which is exactly how the scene went black before. Each animal is
+  isolated here so a casualty is just a missing animal.
+*/
+class CritterBoundary extends Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error) {
+    console.error('[wildlife] animal failed to load, skipping it', error);
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+const Solo = ({ children }) => (
+  <CritterBoundary>
+    <Suspense fallback={null}>{children}</Suspense>
+  </CritterBoundary>
+);
 
 /*
   Note: only the Fox is a skinned rig. The birds and horse are morph-target
@@ -13,7 +42,7 @@ Object.values(MODELS).forEach((m) => useGLTF.preload(m.url));
   freezes the animation mid-flap. Verified by src/checks/wildlife.check.mjs.
 */
 function useCritter(modelKey) {
-  const { scene, animations } = useGLTF(MODELS[modelKey].url);
+  const { scene, animations } = useGLTF(urlFor(MODELS[modelKey].file));
   return useMemo(() => {
     const object = cloneSkinned(scene);
     object.traverse((o) => {
@@ -119,10 +148,14 @@ export default function Wildlife() {
   return (
     <group>
       {FLYERS.map((spec, i) => (
-        <Flyer key={`f${i}`} spec={spec} />
+        <Solo key={`f${i}`}>
+          <Flyer spec={spec} />
+        </Solo>
       ))}
       {GROUNDERS.map((spec, i) => (
-        <Grounder key={`g${i}`} spec={spec} />
+        <Solo key={`g${i}`}>
+          <Grounder spec={spec} />
+        </Solo>
       ))}
     </group>
   );
