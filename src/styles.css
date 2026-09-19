@@ -1,13 +1,21 @@
 :root {
-  --ink: #0b0f0c;
-  --paper: #fbf9f4;
-  /* Pale gold. Deeper golds dropped to ~2.4:1 against the warm horizon band
-     once the scrim was removed; this holds up over sky and foliage alike. */
-  --accent: #ffeec2;
-  /* Saturated gold kept for lines/borders, where contrast rules don't bite. */
-  --accent-deep: #f2c96b;
-  --serif: 'Instrument Serif', Georgia, serif;
-  --sans: 'Inter', system-ui, sans-serif;
+  --paper: #fdfaf3;
+  --muted: rgba(253, 250, 243, 0.74);
+  /* Pale gold: deeper golds drop under 3:1 against a warm dawn sky. */
+  --accent: #ffe3a8;
+  --accent-deep: #f0bc63;
+
+  --serif: 'Fraunces', 'Instrument Serif', Georgia, serif;
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Fluid type scale. Every size derives from these, so the rhythm holds at
+     any viewport instead of needing per-breakpoint overrides. */
+  --t-display: clamp(4.2rem, 15.5vw, 13.5rem);
+  --t-head: clamp(2.5rem, 6.6vw, 5.6rem);
+  --t-body: clamp(1rem, 1.15vw, 1.18rem);
+  --t-small: 0.7rem;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -17,19 +25,19 @@
 }
 
 html {
-  /* Lenis drives scrolling; native smooth would fight it. */
-  scroll-behavior: auto;
+  scroll-behavior: auto; /* Lenis owns scrolling */
 }
 
 body {
-  background: #cfe0ea;
+  background: #9bb8cc;
   color: var(--paper);
   font-family: var(--sans);
+  font-weight: 300;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* The canvas is pinned behind everything; the scroller below gives it length. */
 .stage {
   position: fixed;
   inset: 0;
@@ -41,166 +49,318 @@ body {
   z-index: 1;
 }
 
+/* ---------- panels ---------- */
+
 .panel {
-  height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
-  padding: 0 clamp(1.5rem, 7vw, 10rem);
+  padding: 0 clamp(1.5rem, 8vw, 11rem);
   pointer-events: none;
-  position: relative;
 }
 
-/* Readability scrim. The 3D scene behind the copy changes brightness as the
-   camera moves, so contrast can't rely on the scene alone — this guarantees a
-   dark base under the text while staying invisible as a "box". */
-/* No scrim. Legibility comes from the glyphs themselves (layered text-shadow
-   "halos" in the type rules below) so the forest stays fully visible. */
-
-/* Alternate sides so the 3D scene stays visible through the layout. */
-.panel:nth-child(even) {
+.panel[data-side='right'] {
   justify-content: flex-end;
+}
+
+.panel[data-side='right'] .inner {
   text-align: right;
 }
 
-.panel:nth-child(even) .meta {
+.panel[data-side='right'] .head,
+.panel[data-side='right'] .meta,
+.panel[data-side='right'] .socials {
   justify-content: flex-end;
 }
 
-.inner {
-  position: relative;
-  z-index: 1;
-  max-width: 34rem;
-  opacity: 0;
-  transform: translateY(2.2rem);
-  filter: blur(6px);
-  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.9s ease;
+.panel[data-side='right'] .stat {
+  justify-content: flex-end;
 }
 
-.panel.visible .inner {
-  opacity: 1;
-  transform: none;
-  filter: none;
-}
-
-.panel.hero {
+.panel:first-child {
   justify-content: center;
+}
+
+.panel:first-child .inner {
   text-align: center;
 }
 
-.kicker {
-  font-size: 0.72rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
+.panel:first-child .head {
+  justify-content: center;
+}
+
+.inner {
+  max-width: 36rem;
+}
+
+.panel:first-child .inner {
+  max-width: 54rem;
+}
+
+/* ---------- eyebrow ---------- */
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.6rem;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+
+.panel.visible .head {
+  opacity: 1;
+  transform: none;
+}
+
+.idx {
+  font-family: var(--serif);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--accent);
-  margin-bottom: 1.1rem;
-  font-weight: 600;
-  /* Small uppercase type has little ink to carry contrast, so it gets the
-     densest halo of anything on the page. */
-  text-shadow:
-    0 0 2px rgba(6, 10, 8, 1),
-    0 0 6px rgba(6, 10, 8, 0.9),
-    0 1px 3px rgba(6, 10, 8, 1),
-    0 2px 14px rgba(6, 10, 8, 0.75);
+  text-shadow: 0 1px 4px rgba(10, 14, 8, 0.85);
+}
+
+.rule {
+  width: clamp(1.5rem, 5vw, 3.5rem);
+  height: 1px;
+  background: linear-gradient(to right, var(--accent), transparent);
+  opacity: 0.75;
+}
+
+.kicker {
+  font-size: var(--t-small);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--accent);
+  text-shadow: 0 0 2px rgba(10, 14, 8, 1), 0 0 7px rgba(10, 14, 8, 0.85),
+    0 1px 4px rgba(10, 14, 8, 0.95);
+}
+
+/* ---------- headings ---------- */
+
+.display,
+.heading {
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: -0.028em;
+  color: #fff;
+  /* Halo, not a box: tight radii darken only the pixels touching each glyph,
+     so the forest stays visible right up to the letterforms. */
+  /* Denser than a dusk scene needs: this sky is bright, so bare contrast is
+     only ~1.3:1 on a lit cloud. The halo carries all of it (16:1+). */
+  text-shadow: 0 0 2px rgba(8, 12, 6, 0.95), 0 0 7px rgba(8, 12, 6, 0.8),
+    0 1px 3px rgba(8, 12, 6, 0.95), 0 2px 14px rgba(8, 12, 6, 0.8),
+    0 6px 38px rgba(8, 12, 6, 0.55);
 }
 
 .display {
-  font-family: var(--serif);
-  font-size: clamp(4.5rem, 17vw, 13rem);
-  line-height: 0.88;
-  letter-spacing: -0.02em;
-  color: #fff;
-  /* Halo, not a box: three tight radii darken only the pixels touching each
-     glyph, so the forest stays visible right up to the letterforms. */
-  text-shadow:
-    0 0 1px rgba(6, 10, 8, 0.95),
-    0 1px 3px rgba(6, 10, 8, 0.9),
-    0 2px 10px rgba(6, 10, 8, 0.8),
-    0 4px 28px rgba(6, 10, 8, 0.6);
+  font-size: var(--t-display);
+  font-weight: 200;
+  letter-spacing: -0.045em;
 }
 
 .heading {
-  font-family: var(--serif);
-  font-size: clamp(2.6rem, 7vw, 5rem);
-  line-height: 1.02;
-  white-space: pre-line;
-  letter-spacing: -0.015em;
-  color: #fff;
-  text-shadow:
-    0 0 1px rgba(6, 10, 8, 0.95),
-    0 1px 3px rgba(6, 10, 8, 0.9),
-    0 2px 9px rgba(6, 10, 8, 0.8),
-    0 4px 24px rgba(6, 10, 8, 0.55);
+  font-size: var(--t-head);
 }
 
-.lead {
-  font-size: clamp(0.82rem, 1.5vw, 1rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 1.6rem;
-  color: #fff;
+.accent {
+  font-style: italic;
   font-weight: 400;
-  text-shadow:
-    0 0 1px rgba(6, 10, 8, 0.9),
-    0 1px 3px rgba(6, 10, 8, 0.95),
-    0 2px 12px rgba(6, 10, 8, 0.7);
+  color: var(--accent);
+}
+
+/* Word-by-word reveal: each word rises out of its own clipping mask. */
+.word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-right: 0.22em;
+  /* Descenders would be clipped by overflow without this breathing room. */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.word-in {
+  display: inline-block;
+  transform: translateY(105%);
+  transition: transform 1.15s var(--ease);
+}
+
+.panel.visible .word-in {
+  transform: none;
+}
+
+/* ---------- body copy ---------- */
+
+.lead {
+  margin-top: 1.7rem;
+  font-size: clamp(0.78rem, 1.1vw, 0.92rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(8, 12, 6, 1), 0 0 7px rgba(8, 12, 6, 0.85),
+    0 1px 4px rgba(8, 12, 6, 0.95);
 }
 
 .body {
-  margin-top: 1.4rem;
-  font-size: clamp(0.98rem, 1.5vw, 1.12rem);
-  line-height: 1.65;
-  /* 300 was too thin to hold up over a moving scene. */
-  font-weight: 400;
-  color: #fbf9f4;
-  /* Body text is small, so the halo is tighter — a wide blur on 1rem type
-     just looks like smudge. */
-  text-shadow:
-    0 0 1px rgba(6, 10, 8, 0.9),
-    0 1px 2px rgba(6, 10, 8, 0.95),
-    0 1px 7px rgba(6, 10, 8, 0.85),
-    0 2px 16px rgba(6, 10, 8, 0.5);
+  margin-top: 1.5rem;
+  font-size: var(--t-body);
+  line-height: 1.72;
+  font-weight: 300;
+  /* Measure: ~62 characters is the readable sweet spot for body text. */
+  max-width: 34ch;
+  color: var(--paper);
+  text-shadow: 0 0 2px rgba(8, 12, 6, 0.95), 0 0 6px rgba(8, 12, 6, 0.8),
+    0 1px 3px rgba(8, 12, 6, 0.95), 0 2px 16px rgba(8, 12, 6, 0.65);
+  opacity: 0;
+  transform: translateY(1.4rem);
+  transition: opacity 1s var(--ease) 0.34s, transform 1s var(--ease) 0.34s;
 }
+
+.panel[data-side='right'] .body {
+  margin-left: auto;
+}
+
+.panel:first-child .body {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.panel.visible .body {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- stat ---------- */
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-top: 2.2rem;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: opacity 0.9s var(--ease) 0.5s, transform 0.9s var(--ease) 0.5s;
+}
+
+.panel.visible .stat {
+  opacity: 1;
+  transform: none;
+}
+
+.stat-n {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-weight: 200;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.9), 0 2px 18px rgba(8, 12, 6, 0.6);
+}
+
+.stat-l {
+  font-size: var(--t-small);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.9);
+}
+
+/* ---------- meta pills ---------- */
 
 .meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 2rem;
+  margin-top: 2.2rem;
   list-style: none;
 }
 
 .meta li {
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-size: var(--t-small);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  padding: 0.42rem 0.85rem;
-  border: 1px solid rgba(242, 201, 107, 0.45);
+  font-weight: 400;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid rgba(255, 227, 168, 0.32);
   border-radius: 999px;
-  /* Blur the forest behind the pill instead of hiding it — the scene still
-     shows through, just softened enough to read the label. */
-  backdrop-filter: blur(14px) saturate(130%);
-  background: rgba(8, 12, 10, 0.2);
-  color: #fbf9f4;
-  font-weight: 500;
-  text-shadow: 0 1px 3px rgba(6, 10, 8, 0.9);
+  /* Blur the forest behind the pill rather than hiding it. */
+  backdrop-filter: blur(16px) saturate(125%);
+  background: rgba(12, 18, 10, 0.2);
+  color: var(--paper);
+  text-shadow: 0 1px 3px rgba(8, 12, 6, 0.9);
+  opacity: 0;
+  transform: translateY(0.8rem);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.panel.visible .meta li {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- contact ---------- */
+
+.contact {
+  margin-top: 2.2rem;
+  opacity: 0;
+  transform: translateY(1.2rem);
+  transition: opacity 1s var(--ease) 0.5s, transform 1s var(--ease) 0.5s;
+}
+
+.panel.visible .contact {
+  opacity: 1;
+  transform: none;
 }
 
 .mail {
   display: inline-block;
-  margin-top: 2rem;
   font-family: var(--serif);
-  font-size: clamp(1.4rem, 3.4vw, 2.4rem);
+  font-size: clamp(1.5rem, 4vw, 2.9rem);
+  font-weight: 300;
+  font-style: italic;
   color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(242, 201, 107, 0.5);
   pointer-events: auto;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
-  transition: border-color 0.3s, color 0.3s;
+  border-bottom: 1px solid rgba(255, 227, 168, 0.35);
+  padding-bottom: 0.1em;
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.9), 0 2px 18px rgba(8, 12, 6, 0.6);
+  transition: color 0.4s var(--ease), border-color 0.4s var(--ease);
 }
 
 .mail:hover {
-  border-color: var(--accent);
+  color: #fff;
+  border-color: #fff;
 }
+
+.socials {
+  display: flex;
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+  list-style: none;
+}
+
+.socials a {
+  font-size: var(--t-small);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  pointer-events: auto;
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.9);
+  transition: color 0.35s var(--ease);
+}
+
+.socials a:hover {
+  color: var(--accent);
+}
+
+/* ---------- chrome ---------- */
 
 .topbar {
   position: fixed;
@@ -210,94 +370,143 @@ body {
   z-index: 3;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1.6rem clamp(1.5rem, 5vw, 3rem);
+  align-items: baseline;
+  padding: 1.7rem clamp(1.5rem, 5vw, 3rem);
   pointer-events: none;
-  color: var(--paper);
-  /* `mix-blend-mode: difference` inverted unpredictably as the scene changed
-     brightness; an explicit colour + fade is reliable. */
-  text-shadow:
-    0 0 1px rgba(6, 10, 8, 0.9),
-    0 1px 3px rgba(6, 10, 8, 0.95),
-    0 2px 12px rgba(6, 10, 8, 0.7);
 }
 
 .mark {
-  font-size: 0.8rem;
-  letter-spacing: 0.4em;
-  font-weight: 500;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+  text-shadow: 0 0 2px rgba(8, 12, 6, 0.9), 0 1px 4px rgba(8, 12, 6, 0.95);
 }
 
-.role {
-  font-size: 0.66rem;
-  letter-spacing: 0.24em;
+.mark-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  opacity: 0.88;
+  color: var(--muted);
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.95);
 }
 
-.dots {
+.progress {
   position: fixed;
-  right: clamp(1rem, 2.5vw, 2rem);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 4;
+  background: rgba(8, 12, 6, 0.18);
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(to right, var(--accent-deep), var(--accent));
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+.rail {
+  position: fixed;
+  right: clamp(1rem, 2.4vw, 2.2rem);
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.75rem;
+  align-items: flex-end;
 }
 
-.dot {
-  width: 7px;
-  height: 7px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(251, 249, 244, 0.7);
-  background: rgba(8, 12, 10, 0.45);
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: 0;
+  padding: 0.22rem 0;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  transition: all 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: auto;
 }
 
-.dot.on {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
-  transform: scale(1.5);
+.tick-line {
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  background: rgba(253, 250, 243, 0.45);
+  box-shadow: 0 1px 3px rgba(8, 12, 6, 0.8);
+  transition: width 0.5s var(--ease), background 0.5s var(--ease);
+}
+
+.tick.on .tick-line {
+  width: 3rem;
+  background: var(--accent);
+}
+
+.tick-label {
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.9);
+  opacity: 0;
+  transform: translateX(0.5rem);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+}
+
+.tick:hover .tick-label,
+.tick.on .tick-label {
+  opacity: 1;
+  transform: none;
 }
 
 .hint {
   position: fixed;
-  bottom: 2rem;
+  bottom: 2.2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
+  gap: 0.7rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  opacity: 0;
-  transition: opacity 1s ease;
-  pointer-events: none;
   color: var(--paper);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 1px 4px rgba(8, 12, 6, 0.95);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+  pointer-events: none;
 }
 
 .hint.show {
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .hint i {
   width: 1px;
-  height: 2.4rem;
+  height: 2.6rem;
   background: linear-gradient(to bottom, var(--accent), transparent);
-  animation: drop 2s ease-in-out infinite;
+  animation: fall 2.6s var(--ease) infinite;
 }
 
-@keyframes drop {
-  0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.4; }
-  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+@keyframes fall {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    transform-origin: top;
+    opacity: 0.35;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
 }
 
 .loader {
@@ -306,12 +515,28 @@ body {
   z-index: 10;
   display: grid;
   place-items: center;
-  background: #0f1410;
-  color: var(--paper);
+  background: #0d1509;
+  transition: opacity 1.1s var(--ease), visibility 1.1s;
+}
+
+.loader-mark {
   font-family: var(--serif);
-  font-size: 2rem;
-  letter-spacing: 0.1em;
-  transition: opacity 0.8s ease, visibility 0.8s;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 200;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .loader.done {
@@ -319,27 +544,49 @@ body {
   visibility: hidden;
 }
 
-@media (max-width: 720px) {
-  .panel:nth-child(even) {
+/* ---------- responsive ---------- */
+
+@media (max-width: 860px) {
+  .panel,
+  .panel[data-side='right'] {
     justify-content: flex-start;
+  }
+  .panel[data-side='right'] .inner {
     text-align: left;
   }
-  .panel:nth-child(even) .meta {
+  .panel[data-side='right'] .head,
+  .panel[data-side='right'] .meta,
+  .panel[data-side='right'] .socials,
+  .panel[data-side='right'] .stat {
     justify-content: flex-start;
   }
-  .dots {
+  .panel[data-side='right'] .body {
+    margin-left: 0;
+  }
+  .rail {
+    display: none;
+  }
+  .mark-sub {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inner {
+  .word-in {
+    transform: none;
     transition: none;
+  }
+  .head,
+  .body,
+  .meta li,
+  .stat,
+  .contact {
     opacity: 1;
     transform: none;
-    filter: none;
+    transition: none;
   }
-  .hint i {
+  .hint i,
+  .loader-mark {
     animation: none;
   }
 }

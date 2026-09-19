@@ -1,60 +1,58 @@
 import Lenis from 'lenis';
 import { sections } from './content';
 
-// Single source of truth for scroll position.
-// `progress` is read every frame by the 3D camera rig (no React re-render),
-// `active` is a subscribable index used by the HTML overlay.
-export const scroll = { progress: 0, active: 0, count: sections.length };
+/*
+  One scroll value, two consumers.
+
+  `progress` (0..1) is read every frame by the camera rig inside useFrame, so
+  the 3D scene never triggers a React render. `active` is the section index and
+  is subscribable, because the HTML overlay genuinely needs to re-render when
+  it changes. Keeping these separate is what keeps scrolling at 60fps.
+*/
+export const scroll = { progress: 0, active: 0, velocity: 0, count: sections.length };
 
 const listeners = new Set();
-
-export function subscribe(fn) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
+export const subscribe = (fn) => (listeners.add(fn), () => listeners.delete(fn));
 export const getActive = () => scroll.active;
 
-let instance = null;
+let lenis = null;
 
 export function startLenis() {
-  const lenis = new Lenis({
-    duration: 1.4,
+  lenis = new Lenis({
+    // Long, heavy easing — the brief is "calm", and a snappy scroll fights that.
+    duration: 1.9,
+    easing: (t) => 1 - Math.pow(1 - t, 3.2),
     smoothWheel: true,
-    // Touch devices get native scrolling; smoothing there fights the OS.
+    // Touch gets native scrolling; smoothing it fights the OS and feels laggy.
     syncTouch: false,
+    wheelMultiplier: 0.85,
   });
 
-  const update = ({ scroll: y, limit }) => {
+  lenis.on('scroll', ({ scroll: y, limit, velocity }) => {
     scroll.progress = limit > 0 ? Math.min(Math.max(y / limit, 0), 1) : 0;
+    scroll.velocity = velocity;
     const next = Math.round(scroll.progress * (scroll.count - 1));
     if (next !== scroll.active) {
       scroll.active = next;
       listeners.forEach((fn) => fn());
     }
-  };
+  });
 
-  lenis.on('scroll', update);
-  instance = lenis;
-
-  let raf;
-  const loop = (time) => {
+  let raf = requestAnimationFrame(function loop(time) {
     lenis.raf(time);
     raf = requestAnimationFrame(loop);
-  };
-  raf = requestAnimationFrame(loop);
+  });
 
   return () => {
     cancelAnimationFrame(raf);
     lenis.destroy();
-    instance = null;
+    lenis = null;
   };
 }
 
-// Route jumps through Lenis so they're eased by the same engine as the wheel,
-// instead of a native smooth-scroll racing it.
-export const scrollToSection = (i) => {
+// Route jumps through Lenis so they ease with the same engine as the wheel.
+export function scrollToSection(i) {
   const top = (i / (scroll.count - 1)) * (document.body.scrollHeight - window.innerHeight);
-  if (instance) instance.scrollTo(top, { duration: 1.8 });
+  if (lenis) lenis.scrollTo(top, { duration: 2.4 });
   else window.scrollTo({ top, behavior: 'smooth' });
-};
+}

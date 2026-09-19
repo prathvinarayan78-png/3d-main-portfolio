@@ -6,22 +6,24 @@ import { startLenis } from './scroll';
 import './styles.css';
 
 function App() {
-  const [loaded, setLoaded] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => startLenis(), []);
 
-  // The first frame of a 26-tree forest takes a moment; hold the curtain
-  // until the browser has actually painted it.
+  // Generating the forest blocks briefly on first paint; hold the curtain
+  // until the browser has actually rendered a frame or two.
   useEffect(() => {
     const id = requestAnimationFrame(() =>
-      requestAnimationFrame(() => setTimeout(() => setLoaded(true), 400))
+      requestAnimationFrame(() => setTimeout(() => setReady(true), 900))
     );
     return () => cancelAnimationFrame(id);
   }, []);
 
   return (
     <>
-      <div className={`loader ${loaded ? 'done' : ''}`}>Prathvi</div>
+      <div className={`loader ${ready ? 'done' : ''}`}>
+        <span className="loader-mark">Prathvi</span>
+      </div>
       <div className="stage">
         <Scene />
       </div>

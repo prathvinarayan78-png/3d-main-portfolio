@@ -1,92 +1,141 @@
 # Prathvi — 3D Scroll-Driven Portfolio
 
-A fully 3D, scroll-driven portfolio for **Prathvi** — editor, motion designer, graphic designer,
-web developer and brand manager. The entire page is a single WebGL scene; scrolling flies the
-camera down a spline through a procedurally generated forest while HTML panels fade in over it.
+A fully 3D, scroll-driven portfolio for **Prathvi** — editor, motion designer,
+graphic designer, web developer and brand manager. The whole page is one WebGL
+scene: scrolling flies a camera along a spline through a procedurally generated
+forest at golden hour, past wildlife that wanders on its own.
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
 npm run build
-node src/scene.check.mjs   # camera-path sanity check
+npm run check    # scene, grass, wildlife and lighting checks
 ```
 
-## Why these choices
+## Dependencies
 
-Picked from the research in [`docs/3d-nature-model-sources.md`](docs/3d-nature-model-sources.md):
-
-| Need | Chosen | Reason |
-|---|---|---|
-| Trees | **[ez-tree](https://github.com/dgreenheck/ez-tree)** (1.6k★, MIT) | Highest-rated nature repo found, native Three.js, and it embeds its bark/leaf textures as base64 — **zero binary assets in the repo**. Six species generated at runtime. |
-| Smooth scroll | **[Lenis](https://github.com/darkroomengineering/lenis)** | Drives both the page and the camera from one eased scroll value. |
-| Agent rules | **[Ponytail](https://github.com/DietrichGebert/ponytail)** (141k★, MIT) | See note below. |
-| Wildlife | **[three.js examples](https://github.com/mrdoob/three.js)** (MIT) + **[Khronos Fox](https://github.com/KhronosGroup/glTF-Sample-Assets)** (CC0) | Flamingo, Parrot, Stork and Horse are the classic animated three.js models; the Fox is Khronos' rigged sample with Survey/Walk/Run clips. 596 KB for all five. |
-| Grass / distant birds | Hand-written instanced shaders | One draw call each; a model pack would have been heavier and less controllable. |
-
-Quaternius/Poly Haven models were deliberately **not** used: they'd add tens of MB of binaries to
-git for assets that procedural generation covers at ~0 bytes.
+| Package | Role |
+|---|---|
+| **[Lenis](https://github.com/darkroomengineering/lenis)** | Smooth scroll. Drives both the page and the camera from one eased value. |
+| **[Ponytail](https://github.com/DietrichGebert/ponytail)** | Agent ruleset (141k★). Not a runtime library — see below. |
+| **[ez-tree](https://github.com/dgreenheck/ez-tree)** | Procedural trees, textures embedded as base64 (no binary assets). |
+| React 19 · Three.js · R3F · drei · postprocessing | Rendering stack. |
 
 ### A note on Ponytail
 
-Ponytail is an **AI-agent ruleset**, not a runtime library — the `ponytail` package on npm is an
-unrelated 2019 project, so it was uninstalled. The real rules are vendored where agents look for
-them: `AGENTS.md`, `.agents/rules/ponytail.md` and `.cursor/rules/ponytail.mdc`. They shaped this
-build: no state-management library, no component framework, no asset pipeline, 8 source files.
+Ponytail is an **AI-agent ruleset**, not an npm library — the `ponytail` package
+on npm is an unrelated 2019 project. The real rules are vendored where agents
+look for them: `AGENTS.md`, `.agents/rules/ponytail.md`, `.cursor/rules/ponytail.mdc`.
+They shaped this build: no state library, no UI framework, no CSS framework,
+no asset pipeline. 13 source files.
+
+## 3D models
+
+All from well-known open repos, 588 KB total:
+
+| Model | Source | Licence |
+|---|---|---|
+| Flamingo, Parrot, Stork, Horse | [mrdoob/three.js](https://github.com/mrdoob/three.js) examples | MIT |
+| Fox (Survey / Walk / Run) | [KhronosGroup/glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) | CC0 |
+
+Quaternius and Poly Haven packs were considered and rejected: tens of MB of
+binaries for what procedural generation and five small GLBs already cover.
+
+## Atmosphere
+
+The brief was "calm and mesmerising", which came down to five things:
+
+- **Golden-hour light** — low warm key at 8°, cool rim from behind so trees
+  separate from the sky, explicit tone-mapping exposure.
+- **Drifting motes** — 900 additive points on slow figure-eight paths. The
+  single biggest contributor to air feeling *volumetric* rather than empty.
+- **Layered ground mist** — soft radial-gradient planes that breathe in and out.
+- **Slow everything** — 1.9s scroll easing, 0.62Hz wind, birds on 40m ellipses.
+- **A camera that never sits still** — a 0.28Hz vertical float plus pointer parallax.
+
+## Natural animal movement
+
+Ground animals don't loop a circle — they **wander**. Each has a set of grazing
+stops and walks between them at constant speed, easing in and out of each leg,
+then **pausing** at each stop. The fox cross-fades `Walk` → `Survey` while
+paused, so it stops, looks around, and moves on. Headings are angularly damped,
+so turns glide instead of snapping.
+
+Flyers travel long ellipses (`rx` ≠ `rz`) with banking into the turn and a
+heading computed from the true ellipse tangent. Wing cycles are phase-offset so
+a flamingo pair never flaps in lockstep.
+
+**Only the Fox is a skinned rig** — the birds and horse are morph-target
+animated. Replacing their materials silently freezes them mid-flap.
 
 ## Architecture
 
 ```
 src/
-  content.js          Section copy — the single list that drives everything
-  scroll.js           Lenis + the shared scroll store
-  Overlay.jsx         HTML panels, nav dots
-  styles.css
-  scene.check.mjs     Runnable check
-  wildlife.check.mjs  Verifies every GLB loads, clones and animates
-  grass.check.mjs     Verifies field coverage, evenness and determinism
+  content.js            Section copy — the list that drives everything
+  scroll.js             Lenis + the shared scroll store
+  Overlay.jsx           HTML panels, nav rail, progress bar
+  styles.css            Editorial type system
+  main.jsx
   three/
-    Scene.jsx         Canvas, lighting, post-processing, camera rig
-    Forest.jsx        ez-tree generation + deterministic placement
-    Grass.jsx         120k instanced cross-quad blades, GPU wind
-    grassField.js     Pure blade-placement maths (clumping, corridor bias)
-    Birds.jsx         Distant silhouette flock, vertex-shader wing flap
-    Wildlife.jsx      Animated GLB animals on hand-authored paths
-public/models/        Flamingo, Parrot, Stork, Horse (MIT), Fox (CC0)
+    Scene.jsx           Canvas, lighting, post-processing, camera rig
+    Forest.jsx          ez-tree generation + deterministic placement
+    Grass.jsx           110k instanced cross-quad blades, GPU wind
+    grassField.js       Pure blade-placement maths
+    Wildlife.jsx        GLB animals, animation state machine
+    wildlifePaths.js    Pure placement + wander/fly maths
+    Atmosphere.jsx      Drifting motes, layered mist
+  checks/               Runnable checks (no framework)
+public/models/          5 animated GLBs
 ```
 
-### Wildlife placement
+**The scroll → camera link bypasses React.** Lenis writes `scroll.progress` to a
+plain object; the camera rig reads it inside `useFrame` and interpolates along a
+`CatmullRomCurve3`. No state updates, no re-renders, no dropped frames. Only the
+*active section index* is subscribable (`useSyncExternalStore`), because the
+HTML overlay genuinely needs it.
 
-Positions in `Wildlife.jsx` are **hand-authored, not random** — 4 flyers and 3
-ground animals spread over 170 m, alternating sides, with no two sharing a scroll
-section. `scene.check.mjs` enforces it: ground animals must be >30 m apart and
-clear of the camera corridor, and no more than two animals may share any 30 m
-slice. The only deliberate pair is the two flamingos, which flock on purpose.
+## Checks
 
-Note the birds and horse are **morph-target** rigs, not skinned — only the Fox has
-a skeleton. Replacing their materials freezes them mid-flap, which is why
-`wildlife.check.mjs` steps a real `AnimationMixer` and asserts the geometry moves.
+`npm run check` — plain Node asserts, no test framework. These caught real bugs:
 
-**The scroll → camera link avoids React entirely.** Lenis writes `scroll.progress` to a plain
-object; the camera rig reads it inside `useFrame` and interpolates along a `CatmullRomCurve3`.
-No state updates, no re-renders, no dropped frames. Only the *active section index* is a
-subscribable value, via `useSyncExternalStore`, because the HTML overlay genuinely needs it.
+- **wildlife** — loads every GLB through the real path and steps an
+  `AnimationMixer`. Caught that every animal was **3–8× oversized** (a 10m
+  flamingo), because the raw bbox includes wingspan.
+- **scene** — one camera waypoint per section, camera never clips the ground,
+  animals spread >30m apart and clear of the corridor, and motion is continuous
+  (no teleports) with real pauses.
+- **grass** — every depth slice covered, corridor density even, deterministic.
+- **lighting** — scrapes Scene.jsx and asserts sun elevation, light intensities,
+  vignette, ground luminance and exposure. Guards a regression where the scene
+  rendered black.
 
-Performance: the forest is 6 uniquely generated trees cloned 26 times, grass and birds are
-instanced (1 draw call each), DPR capped at 1.75, and shadow cameras are tightly bounded.
+## Typography
+
+Fraunces (variable serif) against Inter, on a fluid clamp-based scale so the
+rhythm holds at any viewport with no per-breakpoint overrides. Headings split
+into words that rise out of clipping masks on staggered delays; the second line
+of each heading is set in italic gold. Body copy is capped at 34ch measure.
+
+No scrim sits behind the text — legibility comes from layered short-radius
+text-shadow halos that hug each glyph, so the forest stays visible right up to
+the letterforms. Verified at **13–18:1** against sky, sun band, cloud, grass and
+fog. Bare contrast on a lit cloud is only 1.27:1, so the halo is doing all the
+work and is deliberately dense.
 
 ## Customising
 
-- **Copy** — edit `src/content.js`. Adding a section requires adding a matching camera waypoint
-  to `PATH` in `src/three/Scene.jsx`; `scene.check.mjs` fails if you forget.
-- **Email** — the placeholder `hello@prathvi.design` is in the last section of `content.js`.
-- **Forest density** — `<Forest count={26} />` in `Scene.jsx`. Grass auto-scales
-  (120k blades on desktop, 45k on small or low-core devices); override with
-  `<Grass count={80000} />`. Field extent and clumping live in `grassField.js`.
+- **Copy** — `src/content.js`. Adding a section needs a matching camera waypoint
+  in `PATH` in `Scene.jsx`; `npm run check` fails if you forget.
+- **Email** — `hello@prathvi.design` is a placeholder in the last section.
+- **Density** — `<Forest count={52} />`; grass auto-scales (110k desktop, 40k
+  mobile), override with `<Grass count={80000} />`.
+- **Animals** — `src/three/wildlifePaths.js`. The checks enforce spacing.
 
 ## Credits
 
-- **Trees** — [ez-tree](https://github.com/dgreenheck/ez-tree) by Dan Greenheck (MIT)
-- **Flamingo, Parrot, Stork, Horse** — [three.js](https://github.com/mrdoob/three.js) examples (MIT)
-- **Fox** — [glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets), by PixelMannen / tomkranis (CC0 / CC-BY 4.0)
-- **Smooth scroll** — [Lenis](https://github.com/darkroomengineering/lenis) by darkroom.engineering
-- **Agent rules** — [Ponytail](https://github.com/DietrichGebert/ponytail) by Dietrich Gebert (MIT)
+- [ez-tree](https://github.com/dgreenheck/ez-tree) — Dan Greenheck (MIT)
+- [three.js](https://github.com/mrdoob/three.js) examples — Flamingo, Parrot, Stork, Horse (MIT)
+- [glTF-Sample-Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) — Fox, by PixelMannen / tomkranis (CC0 / CC-BY 4.0)
+- [Lenis](https://github.com/darkroomengineering/lenis) — darkroom.engineering
+- [Ponytail](https://github.com/DietrichGebert/ponytail) — Dietrich Gebert (MIT)

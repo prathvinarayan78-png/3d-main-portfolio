@@ -1,69 +1,82 @@
 import { useMemo } from 'react';
 import { Tree } from '@dgreenheck/ez-tree';
-import * as THREE from 'three';
 
-// ez-tree ships its bark/leaf textures as embedded base64, so generating a tree
-// needs no network fetch and no asset files in the repo.
-function makeTree(preset, seed) {
-  const tree = new Tree();
-  tree.loadPreset(preset);
-  tree.options.seed = seed;
-  tree.generate();
-  tree.castShadow = true;
-  tree.receiveShadow = true;
-  tree.traverse((o) => {
+/*
+  Procedural trees from ez-tree (github.com/dgreenheck/ez-tree, MIT).
+  Its bark and leaf textures are embedded as base64 inside the package, so a
+  full forest costs zero binary assets in the repo and zero network requests.
+*/
+
+const mulberry32 = (a) => () => {
+  a |= 0;
+  a = (a + 0x6d2b79f5) | 0;
+  let t = Math.imul(a ^ (a >>> 15), 1 | a);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+const PRESETS = [
+  'Ash Large',
+  'Aspen Large',
+  'Oak Large',
+  'Pine Large',
+  'Ash Medium',
+  'Aspen Medium',
+  'Oak Medium',
+  'Bush 2',
+];
+
+function build(preset, seed) {
+  const t = new Tree();
+  t.loadPreset(preset);
+  t.options.seed = seed;
+  t.generate();
+  t.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = true;
       o.receiveShadow = true;
     }
   });
-  return tree;
+  return t;
 }
 
-// Deterministic PRNG so the forest layout is identical on every load/reload.
-function mulberry32(a) {
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export default function Forest({ count = 52, length = 250 }) {
+  // Generate a small pool of unique trees, then clone across the valley.
+  // 8 uniques at varied rotation/scale is visually indistinguishable from 44
+  // uniques, and generating 44 would block the main thread for seconds.
+  const pool = useMemo(() => PRESETS.map((p, i) => build(p, 700 + i * 331)), []);
 
-const PRESETS = ['Oak Medium', 'Ash Medium', 'Aspen Medium', 'Pine Medium', 'Oak Large', 'Aspen Large'];
-
-export default function Forest({ count = 26, pathLength = 190 }) {
-  // Build a small pool of unique trees, then clone them across the valley.
-  // Generating 26 unique trees costs ~2s; 6 uniques cloned is instant and
-  // visually indistinguishable once rotation and scale vary.
-  // ponytail: fixed pool of 6 species-instances, not per-tree generation.
-  const pool = useMemo(() => PRESETS.map((p, i) => makeTree(p, 1000 + i * 137)), []);
-
-  const placements = useMemo(() => {
-    const rand = mulberry32(20260917);
+  const placed = useMemo(() => {
+    const rand = mulberry32(90210);
     const out = [];
     for (let i = 0; i < count; i++) {
       const t = i / (count - 1);
-      const z = 14 - t * pathLength;
-      // Keep a clear corridor down the middle so the camera always has a view.
+      const z = 16 - t * length;
       const side = i % 2 === 0 ? -1 : 1;
-      const x = side * (7 + rand() * 16);
+      // Keep a clear corridor down the middle so the camera always has a view,
+      // and push a few trees far out to fill the horizon.
+      const far = rand() > 0.72;
+      const x = side * (far ? 30 + rand() * 30 : 8.5 + rand() * 17);
       out.push({
-        key: i,
         tree: pool[i % pool.length],
-        position: [x, 0, z + (rand() - 0.5) * 9],
+        position: [x, -0.15, z + (rand() - 0.5) * 11],
         rotation: [0, rand() * Math.PI * 2, 0],
-        scale: 0.42 + rand() * 0.3,
+        scale: (far ? 0.5 : 0.36) + rand() * 0.34,
       });
     }
     return out;
-  }, [count, pathLength, pool]);
+  }, [count, length, pool]);
 
   return (
     <group>
-      {placements.map(({ key, tree, position, rotation, scale }) => (
-        <primitive key={key} object={tree.clone()} position={position} rotation={rotation} scale={scale} />
+      {placed.map((p, i) => (
+        <primitive
+          key={i}
+          object={p.tree.clone()}
+          position={p.position}
+          rotation={p.rotation}
+          scale={p.scale}
+        />
       ))}
     </group>
   );
